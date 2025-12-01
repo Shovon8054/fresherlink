@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite } from './api';
+import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite } from '../services/api';
 
-function Jobs() {
+function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
@@ -187,4 +187,4 @@ function Jobs() {
   );
 }
 
-export default Jobs;
+export default JobsPage;

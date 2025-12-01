@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProfile, updateProfile, getFavorites, getMyApplications, removeFavorite } from './api';
+import { getProfile, updateProfile, getFavorites, getMyApplications, removeFavorite } from '../services/api';
 
-function Student() {
+function StudentDashboard() {
   const [view, setView] = useState('profile'); // profile, favorites, applications
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -293,4 +293,4 @@ function Student() {
   );
 }
 
-export default Student;
+export default StudentDashboard;

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, signupStudent, signupCompany } from './api';
+import { loginUser, signupStudent, signupCompany } from '../services/api';
 
-function Login() {
+function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [role, setRole] = useState('student');
   const [email, setEmail] = useState('');
@@ -128,4 +128,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default LoginPage;

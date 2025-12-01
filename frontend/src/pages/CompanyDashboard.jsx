@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob } from './api';
+import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob } from '../services/api';
 
-function Company() {
+function CompanyDashboard() {
   const [view, setView] = useState('profile'); // profile, create, manage
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -376,4 +376,4 @@ function Company() {
   );
 }
 
-export default Company;
+export default CompanyDashboard;
