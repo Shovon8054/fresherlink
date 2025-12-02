@@ -1,5 +1,5 @@
-import Favorite from '../models/Favorite.js';
-import Job from '../models/Job.js';
+import { Favorite } from '../models/Favorite.js';
+import { Job } from '../models/Job.js';
 
 export const addFavorite = async (req, res) => {
   try {

@@ -1,4 +1,4 @@
-import Profile from '../models/Profile.js';
+import { Profile } from '../models/Profile.js';
 
 export const getProfile = async (req, res) => {
   try {
@@ -18,6 +18,18 @@ export const upsertProfile = async (req, res) => {
       ...req.body, 
       userId: req.user.id 
     };
+
+    // Handle skills if provided as JSON string
+    if (req.body.skills) {
+      try {
+        profileData.skills = JSON.parse(req.body.skills);
+      } catch (e) {
+        // If not JSON, treat as comma-separated string
+        if (typeof req.body.skills === 'string') {
+          profileData.skills = req.body.skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        }
+      }
+    }
 
     if (req.files?.resume) {
       profileData.resume = req.files.resume[0].path;

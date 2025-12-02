@@ -6,7 +6,9 @@ import {
   createJob,
   updateJob,
   deleteJob,
-  listCompanyJobs
+  listCompanyJobs,
+  getJobApplicants,
+  getRecommendedJobs
 } from '../../controllers/job.controller.js';
 
 const router = express.Router();
@@ -17,6 +19,8 @@ router.post('/jobs', auth, checkRole('company'), createJob);
 router.put('/jobs/:id', auth, checkRole('company'), updateJob);
 router.delete('/jobs/:id', auth, checkRole('company'), deleteJob);
 router.get('/company/jobs', auth, checkRole('company'), listCompanyJobs);
+router.get('/jobs/:jobId/applicants', auth, checkRole('company'), getJobApplicants);
+router.get('/jobs/recommended', auth, checkRole('student'), getRecommendedJobs);
 
 export default router;
 

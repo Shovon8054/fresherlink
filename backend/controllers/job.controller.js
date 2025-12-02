@@ -1,4 +1,6 @@
-import Job from '../models/Job.js';
+import { Job } from '../models/Job.js';
+import { Application } from '../models/Application.js';
+import { Profile } from '../models/Profile.js';
 
 export const listJobs = async (req, res) => {
   try {
@@ -101,6 +103,87 @@ export const listCompanyJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ companyId: req.user.id })
       .sort({ createdAt: -1 });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getJobApplicants = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    // Verify the job belongs to the company
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    if (job.companyId.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ message: 'Unauthorized. You can only view applicants for your own jobs' });
+    }
+
+    // Get all applications for this job with student details
+    const applications = await Application.find({ jobId })
+      .populate('studentId', 'email')
+      .sort({ createdAt: -1 });
+
+    // Populate profile information for each application
+    const applicationsWithProfiles = await Promise.all(
+      applications.map(async (app) => {
+        const profile = await Profile.findOne({ userId: app.studentId._id });
+        return {
+          ...app.toObject(),
+          studentProfile: profile
+        };
+      })
+    );
+
+    res.json(applicationsWithProfiles);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getRecommendedJobs = async (req, res) => {
+  try {
+    // Get student's profile with skills
+    const profile = await Profile.findOne({ userId: req.user.id });
+    
+    if (!profile || !profile.skills || profile.skills.length === 0) {
+      // If no skills, return recent active jobs
+      const jobs = await Job.find({ isActive: true })
+        .populate('companyId', 'email')
+        .sort({ createdAt: -1 })
+        .limit(10);
+      return res.json(jobs);
+    }
+
+    // Extract skills and create search terms
+    const skills = profile.skills.map(skill => skill.toLowerCase());
+    
+    // Find jobs where requirements or description contain any of the student's skills
+    const jobs = await Job.find({ 
+      isActive: true,
+      $or: [
+        { requirements: { $regex: skills.join('|'), $options: 'i' } },
+        { description: { $regex: skills.join('|'), $options: 'i' } },
+        { title: { $regex: skills.join('|'), $options: 'i' } }
+      ]
+    })
+      .populate('companyId', 'email')
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    // If no matches, return recent jobs
+    if (jobs.length === 0) {
+      const recentJobs = await Job.find({ isActive: true })
+        .populate('companyId', 'email')
+        .sort({ createdAt: -1 })
+        .limit(10);
+      return res.json(recentJobs);
+    }
+
     res.json(jobs);
   } catch (error) {
     res.status(500).json({ message: error.message });
