@@ -21,4 +21,4 @@ const profileSchema = new mongoose.Schema({
   website: String
 }, { timestamps: true });
 
-export default mongoose.model('Profile', profileSchema);
+export const Profile = mongoose.models.Profile || mongoose.model('Profile', profileSchema);

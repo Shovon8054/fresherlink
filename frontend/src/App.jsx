@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './Login';
-import Jobs from './Jobs';
-import Student from './Student';
-import Company from './Company';
+import LoginPage from './pages/LoginPage';
+import JobsPage from './pages/JobsPage';
+import JobDetailsPage from './pages/JobDetailsPage';
+import StudentDashboard from './pages/StudentDashboard';
+import CompanyDashboard from './pages/CompanyDashboard';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -11,17 +12,18 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/jobs" element={<JobsPage />} />
+        <Route path="/jobs/:id" element={<JobDetailsPage />} />
         
         <Route 
           path="/student" 
-          element={token && role === 'student' ? <Student /> : <Navigate to="/" />} 
+          element={token && role === 'student' ? <StudentDashboard /> : <Navigate to="/" />} 
         />
         
         <Route 
           path="/company" 
-          element={token && role === 'company' ? <Company /> : <Navigate to="/" />} 
+          element={token && role === 'company' ? <CompanyDashboard /> : <Navigate to="/" />} 
         />
       </Routes>
     </BrowserRouter>

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob } from './api';
+import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob, getJobApplicants, updateApplicationStatus } from '../services/api';
 
-function Company() {
-  const [view, setView] = useState('profile'); // profile, create, manage
+function CompanyDashboard() {
+  const [view, setView] = useState('profile'); // profile, create, manage, applications
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [editingJob, setEditingJob] = useState(null);
+  const [applicants, setApplicants] = useState([]);
+  const [selectedJobId, setSelectedJobId] = useState(null);
   const navigate = useNavigate();
 
   // Profile form
@@ -31,7 +33,16 @@ function Company() {
 
   useEffect(() => {
     if (view === 'manage') fetchJobs();
+    if (view === 'applications') {
+      fetchJobs();
+    }
   }, [view]);
+
+  useEffect(() => {
+    if (view === 'applications' && selectedJobId) {
+      fetchApplicants(selectedJobId);
+    }
+  }, [view, selectedJobId]);
 
   const fetchProfile = async () => {
     try {
@@ -50,8 +61,33 @@ function Company() {
     try {
       const response = await getCompanyJobs();
       setJobs(response.data);
+      if (view === 'applications' && response.data.length > 0 && !selectedJobId) {
+        setSelectedJobId(response.data[0]._id);
+      }
     } catch (error) {
       console.error('Error fetching jobs:', error);
+    }
+  };
+
+  const fetchApplicants = async (jobId) => {
+    try {
+      const response = await getJobApplicants(jobId);
+      setApplicants(response.data);
+    } catch (error) {
+      console.error('Error fetching applicants:', error);
+      alert('Error fetching applicants');
+    }
+  };
+
+  const handleStatusUpdate = async (applicationId, status) => {
+    try {
+      await updateApplicationStatus(applicationId, status);
+      alert(`Application ${status} successfully!`);
+      if (selectedJobId) {
+        fetchApplicants(selectedJobId);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error updating application status');
     }
   };
 
@@ -209,6 +245,18 @@ function Company() {
           }}
         >
           Manage Jobs
+        </button>
+        <button 
+          onClick={() => { setView('applications'); resetJobForm(); }}
+          style={{ 
+            padding: '10px 20px', 
+            backgroundColor: view === 'applications' ? '#007bff' : 'transparent',
+            color: view === 'applications' ? 'white' : 'black',
+            border: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          Manage Applications
         </button>
       </div>
 
@@ -372,8 +420,122 @@ function Company() {
           )}
         </div>
       )}
+
+      {/* Manage Applications View */}
+      {view === 'applications' && (
+        <div>
+          <h2>Manage Applications</h2>
+          {jobs.length === 0 ? (
+            <p>No jobs posted yet. Create a job to see applications!</p>
+          ) : (
+            <div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ marginRight: '10px', fontWeight: 'bold' }}>Select Job:</label>
+                <select 
+                  value={selectedJobId || ''} 
+                  onChange={(e) => setSelectedJobId(e.target.value)}
+                  style={{ padding: '8px', minWidth: '300px' }}
+                >
+                  {jobs.map((job) => (
+                    <option key={job._id} value={job._id}>
+                      {job.title} - {job.type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedJobId && (
+                <div>
+                  <h3>Applicants for Selected Job</h3>
+                  {applicants.length === 0 ? (
+                    <p>No applicants for this job yet.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+                      {applicants.map((app) => (
+                        <div key={app._id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
+                          <div style={{ marginBottom: '10px' }}>
+                            {app.studentProfile?.photo && (
+                              <img 
+                                src={`http://localhost:8080/${app.studentProfile.photo}`} 
+                                alt="Student" 
+                                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }}
+                              />
+                            )}
+                          </div>
+                          <h4>{app.studentProfile?.name || 'Name not provided'}</h4>
+                          <p><strong>Email:</strong> {app.studentId?.email}</p>
+                          <p><strong>Institution:</strong> {app.studentProfile?.institution || 'Not provided'}</p>
+                          <p><strong>Department:</strong> {app.studentProfile?.department || 'Not provided'}</p>
+                          <p>
+                            <strong>Status:</strong> 
+                            <span style={{ 
+                              marginLeft: '10px',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: app.status === 'pending' ? '#ffc107' : app.status === 'shortlisted' ? '#28a745' : '#dc3545',
+                              color: 'white',
+                              fontWeight: 'bold'
+                            }}>
+                              {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                            </span>
+                          </p>
+                          <p><strong>Applied on:</strong> {new Date(app.createdAt).toLocaleDateString()}</p>
+                          {app.studentProfile?.resume && (
+                            <p style={{ marginBottom: '10px' }}>
+                              <a 
+                                href={`http://localhost:8080/${app.studentProfile.resume}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{ color: '#007bff' }}
+                              >
+                                View Resume
+                              </a>
+                            </p>
+                          )}
+                          <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+                            {app.status !== 'shortlisted' && (
+                              <button 
+                                onClick={() => handleStatusUpdate(app._id, 'shortlisted')}
+                                style={{ 
+                                  backgroundColor: '#28a745', 
+                                  color: 'white', 
+                                  border: 'none', 
+                                  padding: '8px 16px', 
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Shortlist
+                              </button>
+                            )}
+                            {app.status !== 'rejected' && (
+                              <button 
+                                onClick={() => handleStatusUpdate(app._id, 'rejected')}
+                                style={{ 
+                                  backgroundColor: '#dc3545', 
+                                  color: 'white', 
+                                  border: 'none', 
+                                  padding: '8px 16px', 
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Reject
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-export default Company;
+export default CompanyDashboard;

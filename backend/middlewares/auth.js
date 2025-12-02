@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = 'your_super_secret_key_change_this';
+const JWT_SECRET = 'HasinaPalaise2024';
 
 export const auth = (req, res, next) => {
   try {

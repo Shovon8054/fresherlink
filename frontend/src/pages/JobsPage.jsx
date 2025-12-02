@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite } from './api';
+import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite } from '../services/api';
 
-function Jobs() {
+function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
@@ -103,18 +103,44 @@ function Jobs() {
 
       {/* Job List */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-        {jobs.map((job) => (
-          <div key={job._id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
-            <h3>{job.title}</h3>
-            <p><strong>Type:</strong> {job.type}</p>
-            <p><strong>Location:</strong> {job.location}</p>
-            <p><strong>Salary:</strong> {job.salary}</p>
-            <p>{job.description?.substring(0, 100)}...</p>
-            
-            <div style={{ marginTop: '10px' }}>
-              <button onClick={() => setSelectedJob(job)} style={{ marginRight: '5px' }}>
-                View Details
-              </button>
+        {jobs.map((job) => {
+          // Check if deadline is within 3 days
+          const isDeadlineNear = (deadline) => {
+            if (!deadline) return false;
+            const deadlineDate = new Date(deadline);
+            const today = new Date();
+            const diffTime = deadlineDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 && diffDays <= 3;
+          };
+
+          return (
+            <div key={job._id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px', position: 'relative' }}>
+              {isDeadlineNear(job.deadline) && (
+                <span style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  backgroundColor: '#ff6b6b',
+                  color: 'white',
+                  padding: '4px 10px',
+                  borderRadius: '15px',
+                  fontSize: '11px',
+                  fontWeight: 'bold'
+                }}>
+                  ⚠️ Deadline Soon!
+                </span>
+              )}
+              <h3>{job.title}</h3>
+              <p><strong>Type:</strong> {job.type}</p>
+              <p><strong>Location:</strong> {job.location}</p>
+              <p><strong>Salary:</strong> {job.salary}</p>
+              <p>{job.description?.substring(0, 100)}...</p>
+              
+              <div style={{ marginTop: '10px' }}>
+                <button onClick={() => navigate(`/jobs/${job._id}`)} style={{ marginRight: '5px' }}>
+                  View Details
+                </button>
               
               {token && role === 'student' && (
                 <>
@@ -131,7 +157,8 @@ function Jobs() {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Job Details Modal */}
@@ -187,4 +214,4 @@ function Jobs() {
   );
 }
 
-export default Jobs;
+export default JobsPage;
