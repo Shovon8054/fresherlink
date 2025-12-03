@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, signupStudent, signupCompany } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,6 +10,7 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,13 +28,11 @@ function LoginPage() {
           response = await signupCompany({ email, password });
         }
       }
-
       const { token, role: userRole, userId } = response.data;
-      
-      // Store all auth data
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', userRole);
-      localStorage.setItem('userId', userId);
+
+      // Use auth context to store token/role/user
+      // store userId in data for compatibility
+      auth.login(token, userRole, { userId });
 
       // Show success message
       if (!isLogin) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob, getJobApplicants, updateApplicationStatus } from '../services/api';
+import Navbar from '../components/Navbar';
 
 function CompanyDashboard() {
   const [view, setView] = useState('profile'); // profile, create, manage, applications
@@ -197,14 +198,13 @@ function CompanyDashboard() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header */}
+      <Navbar />
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h1>Company Dashboard</h1>
         <div>
           <button onClick={() => navigate('/jobs')} style={{ marginRight: '10px' }}>
             Browse All Jobs
           </button>
-          <button onClick={handleLogout}>Logout</button>
         </div>
       </div>
 

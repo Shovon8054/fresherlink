@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfile, updateProfile, getFavorites, getMyApplications, removeFavorite, getRecommendedJobs } from '../services/api';
+import JobCard from '../components/JobCard';
+import Navbar from '../components/Navbar';
 
 function StudentDashboard() {
   const [view, setView] = useState('profile'); // profile, favorites, applications, recommended
@@ -116,14 +118,13 @@ function StudentDashboard() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header */}
+      <Navbar />
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h1>Student Dashboard</h1>
         <div>
           <button onClick={() => navigate('/jobs')} style={{ marginRight: '10px' }}>
             Browse Jobs
           </button>
-          <button onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
@@ -275,31 +276,18 @@ function StudentDashboard() {
       {view === 'favorites' && (
         <div>
           <h2>My Favorite Jobs</h2>
-          {favorites.length === 0 ? (
+              {favorites.length === 0 ? (
             <p>No favorite jobs yet. Browse jobs and click ⭐ to save them!</p>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
               {favorites.map((job) => (
-                <div key={job._id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
-                  <h3>{job.title}</h3>
-                  <p><strong>Type:</strong> {job.type}</p>
-                  <p><strong>Location:</strong> {job.location}</p>
-                  <p><strong>Salary:</strong> {job.salary}</p>
-                  <div style={{ marginTop: '10px' }}>
-                    <button 
-                      onClick={() => navigate('/jobs')} 
-                      style={{ marginRight: '5px' }}
-                    >
-                      View Details
-                    </button>
-                    <button 
-                      onClick={() => handleRemoveFavorite(job._id)}
-                      style={{ backgroundColor: '#dc3545', color: 'white' }}
-                    >
-                      Remove ✕
-                    </button>
-                  </div>
-                </div>
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  onView={(id) => navigate(`/jobs/${id}`)}
+                  onToggleFavorite={handleRemoveFavorite}
+                  removeMode={true}
+                />
               ))}
             </div>
           )}
@@ -362,47 +350,13 @@ function StudentDashboard() {
             <p>No recommendations available. Add skills to your profile to get personalized job recommendations!</p>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-              {recommendedJobs.map((job) => {
-                // Check if deadline is within 3 days
-                const isDeadlineNear = (deadline) => {
-                  if (!deadline) return false;
-                  const deadlineDate = new Date(deadline);
-                  const today = new Date();
-                  const diffTime = deadlineDate - today;
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  return diffDays >= 0 && diffDays <= 3;
-                };
-
-                return (
-                  <div key={job._id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px', position: 'relative' }}>
-                    {isDeadlineNear(job.deadline) && (
-                      <span style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        backgroundColor: '#ff6b6b',
-                        color: 'white',
-                        padding: '4px 10px',
-                        borderRadius: '15px',
-                        fontSize: '11px',
-                        fontWeight: 'bold'
-                      }}>
-                        ⚠️ Deadline Soon!
-                      </span>
-                    )}
-                    <h3>{job.title}</h3>
-                    <p><strong>Type:</strong> {job.type}</p>
-                    <p><strong>Location:</strong> {job.location || 'Not specified'}</p>
-                    <p><strong>Salary:</strong> {job.salary || 'Not specified'}</p>
-                    <p>{job.description?.substring(0, 100)}...</p>
-                    <div style={{ marginTop: '10px' }}>
-                      <button onClick={() => navigate(`/jobs/${job._id}`)}>
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              {recommendedJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  onView={(id) => navigate(`/jobs/${id}`)}
+                />
+              ))}
             </div>
           )}
         </div>

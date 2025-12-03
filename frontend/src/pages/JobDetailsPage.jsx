@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJobById, addFavorite, removeFavorite, applyToJob, getJobComments, addComment, deleteComment } from '../services/api';
+import { isDeadlineNear } from '../hooks/useJobUtils';
 
 function JobDetailsPage() {
   const { id } = useParams();
@@ -106,15 +107,7 @@ function JobDetailsPage() {
     }
   };
 
-  // Check if deadline is within 3 days
-  const isDeadlineNear = (deadline) => {
-    if (!deadline) return false;
-    const deadlineDate = new Date(deadline);
-    const today = new Date();
-    const diffTime = deadlineDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays <= 3;
-  };
+  // deadline helper moved to shared hook
 
   if (loading) {
     return <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>;
