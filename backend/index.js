@@ -8,7 +8,6 @@ import profileRoutes from "./routes/profiles/profile.routes.js";
 import jobRoutes from "./routes/jobs/job.routes.js";
 import applicationRoutes from "./routes/applications/application.routes.js";
 import favoriteRoutes from "./routes/favorites/favorite.routes.js";
-import commentRoutes from "./routes/comments/comment.routes.js";
 
 //==================================database connection========================
 main()
@@ -32,7 +31,6 @@ apiRouter.use('/', profileRoutes);
 apiRouter.use('/', jobRoutes);
 apiRouter.use('/', applicationRoutes);
 apiRouter.use('/', favoriteRoutes);
-apiRouter.use('/', commentRoutes);
 
 app.use('/api', apiRouter);
 
