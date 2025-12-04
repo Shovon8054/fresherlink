@@ -2,7 +2,7 @@ import express from "express";
 const app = express();
 import path from "path";
 import mongoose from "mongoose";
-import cors from "cors";  // Add this line
+import cors from "cors";  
 import authRoutes from "./routes/auth/auth.routes.js";
 import profileRoutes from "./routes/profiles/profile.routes.js";
 import jobRoutes from "./routes/jobs/job.routes.js";
