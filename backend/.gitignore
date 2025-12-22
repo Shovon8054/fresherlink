@@ -1,0 +1,8 @@
+node_modules/
+.env
+
+# Uploaded files (ignore actual files but keep folders)
+uploads/
+uploads/logos/
+uploads/profile_pictures/
+uploads/resumes/

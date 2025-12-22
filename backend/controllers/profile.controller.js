@@ -32,13 +32,14 @@ export const upsertProfile = async (req, res) => {
     }
 
     if (req.files?.resume) {
-      profileData.resume = req.files.resume[0].path;
+      // store relative path for resume (uploads/resumes/<filename>)
+      profileData.resume = `uploads/resumes/${req.files.resume[0].filename}`;
     }
     if (req.files?.photo) {
-      profileData.photo = req.files.photo[0].path;
+      profileData.photo = `uploads/profile_pictures/${req.files.photo[0].filename}`;
     }
     if (req.files?.logo) {
-      profileData.logo = req.files.logo[0].path;
+      profileData.logo = `uploads/logos/${req.files.logo[0].filename}`;
     }
 
     const profile = await Profile.findOneAndUpdate(
@@ -63,7 +64,7 @@ export const deleteProfileField = async (req, res) => {
   try {
     const { field } = req.params; 
     
-    if (!['photo', 'resume'].includes(field)) {
+    if (!['photo', 'resume', 'logo'].includes(field)) {
       return res.status(400).json({ message: 'Invalid field' });
     }
 

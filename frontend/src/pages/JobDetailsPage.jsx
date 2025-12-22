@@ -203,7 +203,7 @@ function JobDetailsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {comment.userProfile?.photo && (
                       <img 
-                        src={`http://localhost:8080/${comment.userProfile.photo}`} 
+                        src={`http://localhost:8080/${comment.userProfile.photo && comment.userProfile.photo.startsWith('uploads/') ? comment.userProfile.photo : `uploads/profile_pictures/${comment.userProfile.photo}`}`} 
                         alt="User" 
                         style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
                       />

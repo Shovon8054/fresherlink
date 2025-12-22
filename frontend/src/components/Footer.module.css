@@ -1,0 +1,49 @@
+.footer {
+  background-color: #ffffff; /* light blue */
+  border-top: 5px solid rgba(11,38,69,0.16);
+  padding: 2rem 0;
+  margin-top: auto; /* Pushes footer to bottom of flex containers */
+  width: 100%;
+  color: #0b2545;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.brand h3 {
+  color: #4f46e5;
+  margin: 0;
+}
+
+.brand p {
+  color: #1d2226;
+  font-size: 0.9rem;
+}
+
+.links {
+  display: flex;
+  gap: 2rem;
+}
+
+.links a {
+  text-decoration: none;
+  color: #4b5563;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.links a:hover {
+  color: #4f46e5;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}

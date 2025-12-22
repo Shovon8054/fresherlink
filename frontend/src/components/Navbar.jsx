@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import styles from './Navbar.module.css'; // Import the new CSS module
+import logo from '../assets/logo.png';
 
 function Navbar({ onLogout }) {
   const navigate = useNavigate();
@@ -19,32 +21,45 @@ function Navbar({ onLogout }) {
     else navigate('/');
   };
 
+  const handleLogoClick = () => {
+    if (auth.token) {
+      if (auth.role === 'student') navigate('/student/profile');
+      else if (auth.role === 'company') navigate('/company');
+      else navigate('/');
+    } else {
+      navigate('/login');
+    }
+  };
+
   // Show the Dashboard button only on the jobs (browse) page for students
-  const showStudentDashboardButton = auth.isAuthenticated && auth.role === 'student' && (location.pathname === '/jobs' || location.pathname === '/');
+  const showStudentDashboardButton = 
+    auth.token && 
+    auth.role === 'student' && 
+    (location.pathname === '/jobs' || location.pathname.startsWith('/jobs/'));
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-      <h1 style={{ margin: 0, cursor: 'pointer' }} onClick={() => navigate('/')}>
-        FresherLink
-      </h1>
+    <nav className={styles.navbar}>
+      <img src={logo} alt="FresherLink logo" className={styles.logoImage} onClick={handleLogoClick} />
 
-      <div>
-        {auth.isAuthenticated ? (
+      <div className={styles.buttonGroup}>
+        {/* Jobs button visible to all users */}
+        <button onClick={() => navigate('/jobs')} className={`${styles.navButton} ${styles.jobsBtn}`}>
+          Jobs
+        </button>
+
+        {auth.token ? (
           <>
-            {showStudentDashboardButton && (
-              <button onClick={goToDashboard} style={{ marginRight: '10px' }}>
-                Dashboard
-              </button>
-            )}
-            <button onClick={handleLogout}>Logout</button>
+            <button onClick={handleLogout} className={`${styles.navButton} ${styles.logoutBtn}`}>
+              Logout
+            </button>
           </>
         ) : (
-          <button onClick={() => navigate('/')}>
+          <button onClick={() => navigate('/')} className={`${styles.navButton} ${styles.loginBtn}`}>
             Login
           </button>
         )}
       </div>
-    </div>
+    </nav>
   );
 }
 

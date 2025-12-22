@@ -1,9 +1,9 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* App.css */
+
+/* CRITICAL FIX: 
+  The #root block (max-width, margin, padding) has been removed.
+  This allows your Login Page to stretch to the full width of the screen.
+*/
 
 .logo {
   height: 6em;

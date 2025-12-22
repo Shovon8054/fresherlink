@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite } from '../services/api';
 import JobCard from '../components/JobCard';
-import Navbar from '../components/Navbar';
+//import Navbar from '../components/Navbar';
 
 function JobsPage() {
   const [jobs, setJobs] = useState([]);
@@ -11,6 +11,7 @@ function JobsPage() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
   
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
@@ -19,11 +20,24 @@ function JobsPage() {
     fetchJobs();
   }, [type]);
 
-  const fetchJobs = async () => {
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('search') || '';
+    if (q) {
+      setSearch(q);
+      fetchJobs(q);
+    } else {
+      // If no search param, fetch all (or apply current type filter)
+      fetchJobs();
+    }
+  }, [location.search]);
+
+  const fetchJobs = async (overrideSearch) => {
     try {
       const params = {};
       if (type) params.type = type;
-      if (search) params.search = search;
+      const searchTerm = overrideSearch !== undefined ? overrideSearch : search;
+      if (searchTerm) params.search = searchTerm;
       
       const response = await getAllJobs(params);
       setJobs(response.data.jobs || response.data);
@@ -34,7 +48,9 @@ function JobsPage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchJobs();
+    const q = search.trim();
+    navigate(`/jobs${q ? '?search=' + encodeURIComponent(q) : ''}`);
+    fetchJobs(q);
   };
 
   const toggleFavorite = async (jobId) => {
@@ -72,7 +88,7 @@ function JobsPage() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <Navbar />
+      {/* <Navbar /> */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h1>All Jobs</h1>
       </div>

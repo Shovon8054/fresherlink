@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob, getJobApplicants, updateApplicationStatus } from '../services/api';
-import Navbar from '../components/Navbar';
+// import Navbar from '../components/Navbar';
 
 function CompanyDashboard() {
   const [view, setView] = useState('profile'); // profile, create, manage, applications
@@ -82,13 +82,17 @@ function CompanyDashboard() {
 
   const handleStatusUpdate = async (applicationId, status) => {
     try {
-      await updateApplicationStatus(applicationId, status);
+      const response = await updateApplicationStatus(applicationId, status);
       alert(`Application ${status} successfully!`);
+      // Optimistically update local applicants state so UI immediately reflects change
+      setApplicants((prev) => prev.map((app) => app._id === applicationId ? { ...app, status } : app));
       if (selectedJobId) {
         fetchApplicants(selectedJobId);
       }
+      return response.data.application;
     } catch (error) {
       alert(error.response?.data?.message || 'Error updating application status');
+      throw error;
     }
   };
 
@@ -198,7 +202,7 @@ function CompanyDashboard() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <Navbar />
+      {/* <Navbar /> */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h1>Company Dashboard</h1>
         <div>
@@ -266,7 +270,9 @@ function CompanyDashboard() {
           {!isEditing && profile ? (
             <div>
               <h2>Company Profile</h2>
-              {profile.logo && <img src={`http://localhost:8080/${profile.logo}`} alt="Logo" style={{ width: '150px' }} />}
+              {profile.logo && (
+                <img src={`http://localhost:8080/${profile.logo && profile.logo.startsWith('uploads/') ? profile.logo : `uploads/logos/${profile.logo}`}`} alt="Logo" style={{ width: '150px' }} />
+              )}
               <p><strong>Company Name:</strong> {profile.companyName}</p>
               <p><strong>Description:</strong> {profile.description}</p>
               <p><strong>Website:</strong> <a href={profile.website} target="_blank" rel="noopener noreferrer">{profile.website}</a></p>
@@ -447,16 +453,16 @@ function CompanyDashboard() {
               {selectedJobId && (
                 <div>
                   <h3>Applicants for Selected Job</h3>
-                  {applicants.length === 0 ? (
+                  {applicants.filter(a => a.status !== 'rejected').length === 0 ? (
                     <p>No applicants for this job yet.</p>
                   ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
-                      {applicants.map((app) => (
+                      {applicants.filter(a => a.status !== 'rejected').map((app) => (
                         <div key={app._id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
                           <div style={{ marginBottom: '10px' }}>
                             {app.studentProfile?.photo && (
                               <img 
-                                src={`http://localhost:8080/${app.studentProfile.photo}`} 
+                                src={`http://localhost:8080/${app.studentProfile.photo && app.studentProfile.photo.startsWith('uploads/') ? app.studentProfile.photo : `uploads/profile_pictures/${app.studentProfile.photo}`}`} 
                                 alt="Student" 
                                 style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }}
                               />
@@ -483,7 +489,7 @@ function CompanyDashboard() {
                           {app.studentProfile?.resume && (
                             <p style={{ marginBottom: '10px' }}>
                               <a 
-                                href={`http://localhost:8080/${app.studentProfile.resume}`} 
+                                href={`http://localhost:8080/${app.studentProfile.resume && app.studentProfile.resume.startsWith('uploads/') ? app.studentProfile.resume : `uploads/resumes/${app.studentProfile.resume}`}`} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 style={{ color: '#007bff' }}
