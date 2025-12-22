@@ -14,25 +14,81 @@ export const getProfile = async (req, res) => {
 
 export const upsertProfile = async (req, res) => {
   try {
-    const profileData = { 
-      ...req.body, 
-      userId: req.user.id 
+    // Start with incoming form/body fields
+    const profileData = {
+      userId: req.user.id
     };
 
-    // Handle skills if provided as JSON string
-    if (req.body.skills) {
+    // Personal fields (accept either top-level or nested keys)
+    if (req.body.name) profileData.name = req.body.name;
+    if (req.body.headline) profileData.headline = req.body.headline;
+    if (req.body.phoneNumber) profileData.phoneNumber = req.body.phoneNumber;
+    if (req.body.currentLocation) profileData.currentLocation = req.body.currentLocation;
+    if (req.body.permanentLocation) profileData.permanentLocation = req.body.permanentLocation;
+
+    // Experience
+    if (req.body.experience) profileData.experience = req.body.experience;
+
+    // Education: either a JSON string/object in req.body.education or individual fields
+    if (req.body.education) {
       try {
-        profileData.skills = JSON.parse(req.body.skills);
+        profileData.education = typeof req.body.education === 'string' ? JSON.parse(req.body.education) : req.body.education;
       } catch (e) {
-        // If not JSON, treat as comma-separated string
-        if (typeof req.body.skills === 'string') {
-          profileData.skills = req.body.skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
-        }
+        // Fallback: treat as CSV or ignore
+        profileData.education = { institution: String(req.body.education) };
       }
+    } else {
+      // Accept individual education fields
+      const edu = {};
+      if (req.body.institution) edu.institution = req.body.institution;
+      if (req.body.degree) edu.degree = req.body.degree;
+      if (req.body.major || req.body.department) edu.major = req.body.major || req.body.department;
+      if (req.body.graduationYear) edu.graduationYear = req.body.graduationYear;
+      if (req.body.cgpa) edu.cgpa = req.body.cgpa;
+      if (req.body.extraCurricular) edu.extraCurricular = req.body.extraCurricular;
+      if (Object.keys(edu).length > 0) profileData.education = edu;
     }
 
+    // Social links: either JSON string or individual fields
+    if (req.body.socialLinks) {
+      try {
+        profileData.socialLinks = typeof req.body.socialLinks === 'string' ? JSON.parse(req.body.socialLinks) : req.body.socialLinks;
+      } catch (e) {
+        profileData.socialLinks = { github: req.body.github, linkedin: req.body.linkedin, portfolio: req.body.portfolio };
+      }
+    } else {
+      const sl = {};
+      if (req.body.github) sl.github = req.body.github;
+      if (req.body.linkedin) sl.linkedin = req.body.linkedin;
+      if (req.body.portfolio) sl.portfolio = req.body.portfolio;
+      if (Object.keys(sl).length > 0) profileData.socialLinks = sl;
+    }
+
+    // Skills: technicalSkills and softSkills - accept JSON array or comma-separated string
+    const parseArrayField = (fieldName) => {
+      const val = req.body[fieldName];
+      if (!val && val !== '') return undefined;
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) return parsed.map(s => String(s).trim()).filter(Boolean);
+        } catch (e) {
+          // Not JSON, treat as comma-separated
+          return val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        }
+      }
+      return undefined;
+    };
+
+    const tech = parseArrayField('technicalSkills') || parseArrayField('technical') || parseArrayField('skills');
+    if (tech) profileData.technicalSkills = tech;
+
+    const soft = parseArrayField('softSkills') || parseArrayField('soft');
+    if (soft) profileData.softSkills = soft;
+
+    // Files handling
     if (req.files?.resume) {
-      // store relative path for resume (uploads/resumes/<filename>)
       profileData.resume = `uploads/resumes/${req.files.resume[0].filename}`;
     }
     if (req.files?.photo) {
@@ -42,13 +98,11 @@ export const upsertProfile = async (req, res) => {
       profileData.logo = `uploads/logos/${req.files.logo[0].filename}`;
     }
 
+    // Merge with existing values if upsert keeps them
     const profile = await Profile.findOneAndUpdate(
       { userId: req.user.id },
-      profileData,
-      { 
-        new: true,
-        upsert: true
-      }
+      { $set: profileData },
+      { new: true, upsert: true }
     );
 
     res.json({

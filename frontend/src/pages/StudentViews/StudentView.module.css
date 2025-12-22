@@ -120,3 +120,38 @@
     font-weight: 500;
     color: #4f46e5;
 }
+
+/* New styles for profile sections */
+.sectionTitle {
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.skillsRow {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.badgeTechnical {
+    background: #e6f0ff;
+    color: #1e3a8a;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.softSkillList {
+    list-style: disc;
+    margin-left: 1rem;
+}
+
+.profileCard {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem;
+}

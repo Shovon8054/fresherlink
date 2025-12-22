@@ -27,12 +27,18 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 const apiRouter = express.Router();
-apiRouter.use('/', authRoutes);
-apiRouter.use('/', profileRoutes);
-apiRouter.use('/', jobRoutes);
-apiRouter.use('/', applicationRoutes);
-apiRouter.use('/', favoriteRoutes);
-apiRouter.use('/', commentRoutes);
+// Public / auth
+apiRouter.use('/', authRoutes); // keeps /login, /signup, etc.
+// Profile routes
+apiRouter.use('/profile', profileRoutes);
+// Job routes
+apiRouter.use('/jobs', jobRoutes);
+// Applications
+apiRouter.use('/applications', applicationRoutes);
+// Favorites
+apiRouter.use('/favorites', favoriteRoutes);
+// Comments
+apiRouter.use('/comments', commentRoutes);
 
 app.use('/api', apiRouter);
 
