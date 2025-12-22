@@ -1,0 +1,126 @@
+/* LoginPage.module.css */
+.pageWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Change height to min-height and remove overflow: hidden */
+  min-height: 100vh; 
+  width: 100%;
+  background: radial-gradient(circle at top left, #eef2ff 0%, #e0e7ff 100%);
+  padding: 2rem 0; /* Adds some space when scrolling */
+}
+
+/* Keep the rest of your .card styles the same */
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  padding: 2.5rem;
+  border-radius: 24px;
+  /* stronger, softer shadow for floating effect */
+  box-shadow: 0 30px 60px rgba(11,38,69,0.12), 0 12px 24px rgba(11,38,69,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  /* smooth transform for a floating effect */
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
+  transform: translateY(-6px);
+}
+
+/* Hover: lift more and intensify shadow */
+.card:hover {
+  transform: translateY(-14px);
+  box-shadow: 0 48px 100px rgba(11,38,69,0.18), 0 20px 40px rgba(11,38,69,0.08);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  color: #4f46e5;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  font-size: 1rem;
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+.inputGroup {
+  margin-bottom: 1.25rem;
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #4f46e5;
+  ring: 2px solid #c7d2fe;
+  box-shadow: 0 0 0 4px #e0e7ff;
+}
+
+.submitBtn {
+  width: 100%;
+  background: #4f46e5;
+  color: white;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.2s ease;
+}
+
+.submitBtn:hover {
+  background: #4338ca;
+}
+
+.toggleText {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.guestButton {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.7rem;
+  background: #f9fafb;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.guestButton:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}

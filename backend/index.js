@@ -3,7 +3,12 @@ const app = express();
 import path from "path";
 import mongoose from "mongoose";
 import cors from "cors";  // Add this line
-import routes from "./routes.js";
+import authRoutes from "./routes/auth/auth.routes.js";
+import profileRoutes from "./routes/profiles/profile.routes.js";
+import jobRoutes from "./routes/jobs/job.routes.js";
+import applicationRoutes from "./routes/applications/application.routes.js";
+import favoriteRoutes from "./routes/favorites/favorite.routes.js";
+import commentRoutes from "./routes/comments/comment.routes.js";
 
 //==================================database connection========================
 main()
@@ -21,8 +26,15 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// Routes
-app.use('/api', routes);
+const apiRouter = express.Router();
+apiRouter.use('/', authRoutes);
+apiRouter.use('/', profileRoutes);
+apiRouter.use('/', jobRoutes);
+apiRouter.use('/', applicationRoutes);
+apiRouter.use('/', favoriteRoutes);
+apiRouter.use('/', commentRoutes);
+
+app.use('/api', apiRouter);
 
 const PORT = 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

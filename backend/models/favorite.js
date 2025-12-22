@@ -16,4 +16,4 @@ const favoriteSchema = new mongoose.Schema({
 
 favoriteSchema.index({ studentId: 1, jobId: 1 }, { unique: true });
 
-export default mongoose.model('Favorite', favoriteSchema);
+export const Favorite = mongoose.models.Favorite || mongoose.model('Favorite', favoriteSchema);
