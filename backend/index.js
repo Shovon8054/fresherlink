@@ -12,12 +12,12 @@ import commentRoutes from "./routes/comments/comment.routes.js";
 
 //==================================database connection========================
 main()
-    .then(()=>{
+    .then(() => {
         console.log("database connected")
     })
-    .catch((err)=>console.log(err));
+    .catch((err) => console.log(err));
 
-async function main(){
+async function main() {
     await mongoose.connect('mongodb://127.0.0.1:27017/fresherlink');
 }
 
@@ -27,12 +27,27 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 const apiRouter = express.Router();
-apiRouter.use('/', authRoutes);
-apiRouter.use('/', profileRoutes);
-apiRouter.use('/', jobRoutes);
-apiRouter.use('/', applicationRoutes);
-apiRouter.use('/', favoriteRoutes);
-apiRouter.use('/', commentRoutes);
+// Public / auth
+apiRouter.use('/', authRoutes); // keeps /login, /signup, etc.
+// Profile routes
+apiRouter.use('/profile', profileRoutes);
+// Job routes
+apiRouter.use('/jobs', jobRoutes);
+// Applications
+apiRouter.use('/applications', applicationRoutes);
+// Favorites
+apiRouter.use('/favorites', favoriteRoutes);
+// Comments
+apiRouter.use('/comments', commentRoutes);
+// Notifications
+import notificationRoutes from "./routes/notifications/notification.routes.js";
+apiRouter.use('/notifications', notificationRoutes);
+
+// Social Feed
+import postRoutes from "./routes/posts/post.routes.js";
+import userRoutes from "./routes/users/user.routes.js";
+apiRouter.use('/posts', postRoutes);
+apiRouter.use('/users', userRoutes);
 
 app.use('/api', apiRouter);
 

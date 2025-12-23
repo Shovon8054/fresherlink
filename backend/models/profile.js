@@ -7,14 +7,44 @@ const profileSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  // Student fields
+
+  // Personal Info
   name: String,
   photo: String,
-  institution: String,
-  department: String,
   resume: String,
-  
-  // Company fields
+  headline: String,
+  phoneNumber: String,
+  currentLocation: String,
+  permanentLocation: String,
+
+  // Education object
+  education: {
+    institution: String,
+    degree: String,
+    major: String,
+    graduationYear: String,
+    cgpa: String,
+    extraCurricular: String
+  },
+
+  // Experience
+  experience: {
+    type: String,
+    default: 'N/A'
+  },
+
+  // Social Links
+  socialLinks: {
+    github: String,
+    linkedin: String,
+    portfolio: String
+  },
+
+  // Skills
+  technicalSkills: [String],
+  softSkills: [String],
+
+  // Company fields (kept for company profiles)
   companyName: String,
   logo: String,
   description: String,

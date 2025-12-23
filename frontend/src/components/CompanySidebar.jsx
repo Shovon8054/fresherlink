@@ -6,6 +6,7 @@ export default function CompanySidebar({ currentView, setView }) {
 
   const menuItems = [
     { id: 'profile', label: 'Company Profile', icon: '🏢' },
+    { id: '/feed', label: 'Feed', icon: '📰' },
     { id: 'create', label: 'Post New Job', icon: '➕' },
     { id: 'manage', label: 'Manage Jobs', icon: '🧾' },
     { id: 'applications', label: 'Manage Applications', icon: '📨' },
@@ -20,13 +21,25 @@ export default function CompanySidebar({ currentView, setView }) {
       {menuItems.map((item) => (
         <button
           key={item.id}
-          onClick={() => setView(item.id)}
+          onClick={() => {
+            if (item.id.startsWith('/')) window.location.href = item.id;
+            else setView(item.id);
+          }}
           className={`${styles.navItem} ${currentView === item.id ? styles.activeItem : ''}`}
         >
           <span className={styles.icon}>{item.icon}</span>
           <span className={styles.label} style={{ opacity: isOpen ? 1 : 0 }}>{item.label}</span>
         </button>
       ))}
+
+      {/* External Link for My Posts */}
+      <button
+        onClick={() => window.location.href = '/my-posts'} // Simple navigation
+        className={styles.navItem}
+      >
+        <span className={styles.icon}>📰</span>
+        <span className={styles.label} style={{ opacity: isOpen ? 1 : 0 }}>My Posts</span>
+      </button>
     </aside>
   );
 }

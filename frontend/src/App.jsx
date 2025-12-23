@@ -7,6 +7,10 @@ import StudentDashboard from './pages/StudentDashboard';
 import CompanyDashboard from './pages/companyViews/CompanyDashboard';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
+import PrivacyPage from './pages/PrivacyPage';
+import MyPostsPage from './pages/MyPostsPage';
+import FeedPage from './pages/FeedPage';
+import PeoplePage from './pages/PeoplePage';
 import { useAuth } from './context/AuthContext';
 
 function AppContent() {
@@ -19,7 +23,7 @@ function AppContent() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {!isAuthPage && <Navbar />}
-      
+
       <main style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -27,15 +31,31 @@ function AppContent() {
           <Route path="/signup" element={<LoginPage />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/:id" element={<JobDetailsPage />} />
-          
-          <Route 
-            path="/student/*" 
-            element={token && role === 'student' ? <StudentDashboard /> : <Navigate to="/" />} 
+
+          <Route
+            path="/student/*"
+            element={token && role === 'student' ? <StudentDashboard /> : <Navigate to="/" />}
           />
-          
-          <Route 
-            path="/company" 
-            element={token && role === 'company' ? <CompanyDashboard /> : <Navigate to="/" />} 
+
+          <Route
+            path="/company"
+            element={token && role === 'company' ? <CompanyDashboard /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/privacy"
+            element={token ? <PrivacyPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/my-posts"
+            element={token ? <MyPostsPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/feed"
+            element={token ? <FeedPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/people"
+            element={token ? <PeoplePage /> : <Navigate to="/" />}
           />
         </Routes>
       </main>
