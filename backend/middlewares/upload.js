@@ -5,7 +5,8 @@ import fs from 'fs';
 const folders = {
   logo: 'uploads/logos',
   photo: 'uploads/profile_pictures',
-  resume: 'uploads/resumes'
+  resume: 'uploads/resumes',
+  media: 'uploads/posts'
 };
 
 const storage = multer.diskStorage({

@@ -106,7 +106,7 @@ export default function ProfileView() {
         formData.append('education', JSON.stringify(education));
 
         // Experience
-        if (experience) formData.append('experience', experience);
+        if (experience) formData.append('experience', JSON.stringify(experience));
 
         // Social links
         const socialLinks = { github, linkedin, portfolio };
@@ -142,10 +142,10 @@ export default function ProfileView() {
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                         <div style={{ flex: '0 0 120px' }}>
                             {profile.photo ? (
-                                <img 
-                                    src={`http://localhost:8080/${(profile.photo && profile.photo.startsWith('uploads/')) ? profile.photo : `uploads/profile_pictures/${profile.photo}`}`} 
-                                    className={styles.avatar} 
-                                    alt= "Profile"
+                                <img
+                                    src={`http://localhost:8080/${(profile.photo && profile.photo.startsWith('uploads/')) ? profile.photo : `uploads/profile_pictures/${profile.photo}`}`}
+                                    className={styles.avatar}
+                                    alt="Profile"
                                 />
                             ) : (
                                 <div className={styles.avatarPlaceholder}>{(profile.name || 'U').charAt(0)}</div>
@@ -206,8 +206,8 @@ export default function ProfileView() {
                         {profile.resume && (
                             <p style={{ marginTop: '12px' }}>
                                 <strong>Resume:</strong>{' '}
-                                <a 
-                                    href={`http://localhost:8080/${(profile.resume && profile.resume.startsWith('uploads/')) ? profile.resume : `uploads/resumes/${profile.resume}`}`} 
+                                <a
+                                    href={`http://localhost:8080/${(profile.resume && profile.resume.startsWith('uploads/')) ? profile.resume : `uploads/resumes/${profile.resume}`}`}
                                     target="_blank" rel="noopener noreferrer"
                                 >
                                     View Resume

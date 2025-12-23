@@ -17,6 +17,9 @@ API.interceptors.request.use((config) => {
 export const loginUser = (data) => API.post('/login', data);
 export const signupStudent = (data) => API.post('/signup/student', data);
 export const signupCompany = (data) => API.post('/signup/company', data);
+export const deleteAccount = () => API.delete('/delete-account');
+export const forgotPassword = (email) => API.post('/forgot-password', { email });
+export const resetPassword = (data) => API.post('/reset-password', data);
 
 // ========== PROFILE ==========
 export const getProfile = () => API.get('/profile');
@@ -50,5 +53,21 @@ export const deleteComment = (commentId) => API.delete(`/comments/${commentId}`)
 
 // ========== RECOMMENDATIONS ==========
 export const getRecommendedJobs = () => API.get('/jobs/recommended');
+
+// ========== NOTIFICATIONS ==========
+export const getNotifications = () => API.get('/notifications');
+export const markNotificationAsRead = (id) => API.put(`/notifications/${id}/read`);
+
+// ========== SOCIAL FEED ==========
+export const createPost = (formData) => API.post('/posts', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const getMyPosts = () => API.get('/posts/my-posts');
+export const getFeed = () => API.get('/posts/feed');
+export const getAllUsers = () => API.get('/users/all');
+export const followUser = (id) => API.put(`/users/${id}/follow`);
+export const unfollowUser = (id) => API.put(`/users/${id}/unfollow`);
+export const likePost = (id) => API.put(`/posts/${id}/like`);
+export const addPostComment = (id, text) => API.post(`/posts/${id}/comment`, { text });
 
 export default API;

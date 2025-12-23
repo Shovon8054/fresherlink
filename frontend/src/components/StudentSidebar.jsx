@@ -5,12 +5,14 @@ import { Link, useLocation } from 'react-router-dom';
 const StudentSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  
+
   const menuItems = [
     { id: 'profile', label: 'My Profile', icon: '👤' },
+    { id: '/feed', label: 'Feed', icon: '📰' },
     { id: 'favorites', label: 'Favorite Jobs', icon: '⭐' },
     { id: 'applications', label: 'My Applications', icon: '📝' },
     { id: 'recommended', label: 'For You', icon: '🎯' },
+    { id: '/my-posts', label: 'My Posts', icon: '📝' },
   ];
 
   return (
@@ -20,15 +22,15 @@ const StudentSidebar = () => {
       </button>
 
       {menuItems.map((item) => (
-  <Link
-    key={item.id}
-    to={`/student/${item.id}`} // This changes the URL to /student/profile, etc.
-    className={`${styles.navItem} ${location.pathname.includes(item.id) ? styles.activeItem : ''}`}
-  >
-    <span className={styles.icon}>{item.icon}</span>
-    <span className={styles.label}>{item.label}</span>
-  </Link>
-))}
+        <Link
+          key={item.id}
+          to={item.id.startsWith('/') ? item.id : `/student/${item.id}`} // Handle absolute vs relative paths
+          className={`${styles.navItem} ${location.pathname.includes(item.id) ? styles.activeItem : ''}`}
+        >
+          <span className={styles.icon}>{item.icon}</span>
+          <span className={styles.label}>{item.label}</span>
+        </Link>
+      ))}
     </aside>
   );
 };

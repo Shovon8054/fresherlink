@@ -2,7 +2,7 @@ import { Profile } from '../models/Profile.js';
 
 export const getProfile = async (req, res) => {
   try {
-    const profile = await Profile.findOne({ userId: req.user.id });
+    const profile = await Profile.findOne({ userId: req.user.id }).populate('userId', 'email');
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
@@ -14,118 +14,144 @@ export const getProfile = async (req, res) => {
 
 export const upsertProfile = async (req, res) => {
   try {
-    // Start with incoming form/body fields
+    const { id } = req.user;
+
+    // 1. Initialize data with basic fields
     const profileData = {
-      userId: req.user.id
+      userId: id,
+      ...req.body // Spread all body fields initially (allows for flat fields like 'name', 'headline')
     };
 
-    // Personal fields (accept either top-level or nested keys)
-    if (req.body.name) profileData.name = req.body.name;
-    if (req.body.headline) profileData.headline = req.body.headline;
-    if (req.body.phoneNumber) profileData.phoneNumber = req.body.phoneNumber;
-    if (req.body.currentLocation) profileData.currentLocation = req.body.currentLocation;
-    if (req.body.permanentLocation) profileData.permanentLocation = req.body.permanentLocation;
+    // 2. Parse Complex Objects (Education & Social Links)
+    // The Frontend sends these as JSON strings when using FormData.
+    // We try to parse them. If parsing fails (e.g. invalid JSON), we fall back to checking for individual fields.
 
-    // Experience
-    if (req.body.experience) profileData.experience = req.body.experience;
-
-    // Education: either a JSON string/object in req.body.education or individual fields
-    if (req.body.education) {
+    // --- Education Parsing ---
+    let educationData = req.body.education;
+    if (typeof educationData === 'string') {
       try {
-        profileData.education = typeof req.body.education === 'string' ? JSON.parse(req.body.education) : req.body.education;
+        educationData = JSON.parse(educationData);
       } catch (e) {
-        // Fallback: treat as CSV or ignore
-        profileData.education = { institution: String(req.body.education) };
+        educationData = null; // Parsing failed, ignore the string
       }
+    }
+
+    if (educationData && typeof educationData === 'object') {
+      profileData.education = educationData;
     } else {
-      // Accept individual education fields
+      // Fallback: Construct education from individual fields if JSON wasn't provided
       const edu = {};
       if (req.body.institution) edu.institution = req.body.institution;
       if (req.body.degree) edu.degree = req.body.degree;
-      if (req.body.major || req.body.department) edu.major = req.body.major || req.body.department;
+      if (req.body.major) edu.major = req.body.major;
+      if (req.body.department) edu.major = req.body.department; // Handle synonym
       if (req.body.graduationYear) edu.graduationYear = req.body.graduationYear;
       if (req.body.cgpa) edu.cgpa = req.body.cgpa;
       if (req.body.extraCurricular) edu.extraCurricular = req.body.extraCurricular;
-      if (Object.keys(edu).length > 0) profileData.education = edu;
+
+      // Only attach if we actually found fields
+      if (Object.keys(edu).length > 0) {
+        profileData.education = edu;
+      }
     }
 
-    // Social links: either JSON string or individual fields
-    if (req.body.socialLinks) {
+    // --- Social Links Parsing ---
+    let socialData = req.body.socialLinks;
+    if (typeof socialData === 'string') {
       try {
-        profileData.socialLinks = typeof req.body.socialLinks === 'string' ? JSON.parse(req.body.socialLinks) : req.body.socialLinks;
+        socialData = JSON.parse(socialData);
       } catch (e) {
-        profileData.socialLinks = { github: req.body.github, linkedin: req.body.linkedin, portfolio: req.body.portfolio };
+        socialData = null;
       }
+    }
+
+    if (socialData && typeof socialData === 'object') {
+      profileData.socialLinks = socialData;
     } else {
+      // Fallback
       const sl = {};
       if (req.body.github) sl.github = req.body.github;
       if (req.body.linkedin) sl.linkedin = req.body.linkedin;
       if (req.body.portfolio) sl.portfolio = req.body.portfolio;
-      if (Object.keys(sl).length > 0) profileData.socialLinks = sl;
+
+      if (Object.keys(sl).length > 0) {
+        profileData.socialLinks = sl;
+      }
     }
 
-    // Skills: technicalSkills and softSkills - accept JSON array or comma-separated string
-    const parseArrayField = (fieldName) => {
-      const val = req.body[fieldName];
-      if (!val && val !== '') return undefined;
-      if (Array.isArray(val)) return val;
-      if (typeof val === 'string') {
+    // 3. Parse Skills (Strings -> Arrays)
+    // Supports both JSON arrays '["a", "b"]' and comma-separated strings "a, b"
+    const parseSkills = (input) => {
+      if (Array.isArray(input)) return input;
+      if (typeof input === 'string') {
         try {
-          const parsed = JSON.parse(val);
-          if (Array.isArray(parsed)) return parsed.map(s => String(s).trim()).filter(Boolean);
+          // Try parsing as JSON array
+          const parsed = JSON.parse(input);
+          if (Array.isArray(parsed)) return parsed;
         } catch (e) {
-          // Not JSON, treat as comma-separated
-          return val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          // Fallback: Split by comma
+          return input.split(',').map(s => s.trim()).filter(Boolean);
         }
       }
       return undefined;
     };
 
-    const tech = parseArrayField('technicalSkills') || parseArrayField('technical') || parseArrayField('skills');
-    if (tech) profileData.technicalSkills = tech;
+    const techSkills = parseSkills(req.body.technicalSkills) || parseSkills(req.body.technical);
+    if (techSkills) profileData.technicalSkills = techSkills;
 
-    const soft = parseArrayField('softSkills') || parseArrayField('soft');
-    if (soft) profileData.softSkills = soft;
+    const softSkills = parseSkills(req.body.softSkills) || parseSkills(req.body.soft);
+    if (softSkills) profileData.softSkills = softSkills;
 
-    // Files handling
-    if (req.files?.resume) {
-      profileData.resume = `uploads/resumes/${req.files.resume[0].filename}`;
-    }
-    if (req.files?.photo) {
-      profileData.photo = `uploads/profile_pictures/${req.files.photo[0].filename}`;
-    }
-    if (req.files?.logo) {
-      profileData.logo = `uploads/logos/${req.files.logo[0].filename}`;
+    // 4. Handle File Uploads
+    if (req.files) {
+      if (req.files.resume && req.files.resume[0]) {
+        profileData.resume = `uploads/resumes/${req.files.resume[0].filename}`;
+      }
+      if (req.files.photo && req.files.photo[0]) {
+        profileData.photo = `uploads/profile_pictures/${req.files.photo[0].filename}`;
+      }
+      // Keep legacy support for 'logo' if this controller serves companies too
+      if (req.files.logo && req.files.logo[0]) {
+        profileData.logo = `uploads/logos/${req.files.logo[0].filename}`;
+      }
     }
 
-    // Merge with existing values if upsert keeps them
+    // 5. Database Update
     const profile = await Profile.findOneAndUpdate(
-      { userId: req.user.id },
+      { userId: id },
       { $set: profileData },
-      { new: true, upsert: true }
+      { new: true, upsert: true, runValidators: true } // runValidators ensures data integrity
     );
 
     res.json({
       message: 'Profile updated successfully',
       profile
     });
+
   } catch (error) {
+    console.error("Profile Update Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
 export const deleteProfileField = async (req, res) => {
   try {
-    const { field } = req.params; 
-    
-    if (!['photo', 'resume', 'logo'].includes(field)) {
+    const { field } = req.params;
+
+    // Whitelist allowed fields to delete
+    const allowedFields = ['profilePhoto', 'photo', 'resume', 'logo'];
+
+    if (!allowedFields.includes(field)) {
       return res.status(400).json({ message: 'Invalid field' });
     }
 
-    const update = { [field]: null };
+    // Handle mapping 'photo' to 'profilePhoto' if necessary based on your Schema
+    const dbField = field === 'photo' ? 'profilePhoto' : field;
+
+    const update = { [dbField]: null };
     const profile = await Profile.findOneAndUpdate(
       { userId: req.user.id },
-      update,
+      { $set: update }, // Use $set to explicitly nullify
       { new: true }
     );
 
@@ -137,4 +163,3 @@ export const deleteProfileField = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-

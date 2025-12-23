@@ -1,4 +1,6 @@
 import { Application } from '../models/Application.js';
+import { Job } from '../models/Job.js';
+import { Notification } from '../models/Notification.js';
 
 export const applyToJob = async (req, res) => {
   try {
@@ -15,6 +17,19 @@ export const applyToJob = async (req, res) => {
       jobId
     });
     await application.save();
+
+    // Find the job to get the companyId (recipient)
+    const job = await Job.findById(jobId);
+    if (job) {
+      await Notification.create({
+        recipient: job.companyId,
+        sender: req.user.id,
+        message: `New application received for ${job.title} from ${req.user.name || 'a student'}.`,
+        type: 'application_received',
+        relatedJob: jobId
+      });
+    }
+
     res.status(201).json(application);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -44,7 +59,7 @@ export const updateApplicationStatus = async (req, res) => {
 
     // Find the application and verify the job belongs to the company
     const application = await Application.findById(applicationId).populate('jobId');
-    
+
     if (!application) {
       return res.status(404).json({ message: 'Application not found' });
     }
@@ -57,6 +72,19 @@ export const updateApplicationStatus = async (req, res) => {
     // Update the status
     application.status = status;
     await application.save();
+
+    // Create Notification for Student
+    // Ensure we have the job title; application.jobId is populated with the job object
+    const jobTitle = application.jobId.title;
+    const companyName = req.user.name || "A company"; // Fallback if name is not on req.user, though auth middleware usually provides it
+
+    await Notification.create({
+      recipient: application.studentId,
+      sender: req.user.id,
+      message: `Your application for ${jobTitle} has been ${status} by ${companyName}.`,
+      type: 'application_status_update',
+      relatedJob: application.jobId._id
+    });
 
     res.json({
       message: 'Application status updated successfully',
