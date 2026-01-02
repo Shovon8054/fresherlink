@@ -1,12 +1,25 @@
 import express from 'express';
-import { auth, checkRole } from '../../middlewares/auth.js';
-import { applyToJob, getMyApplications, updateApplicationStatus } from '../../controllers/application.controller.js';
+import {
+    applyToJob,
+    getStudentApplications,
+    getJobApplications,
+    updateApplicationStatus
+} from '../../controllers/application.controller.js';
+import { auth as verifyToken } from '../../middlewares/auth.js';
+import { profileUpload as upload } from '../../middlewares/upload.js';
 
 const router = express.Router();
 
-router.post('/apply', auth, checkRole('student'), applyToJob);
-router.get('/applications', auth, checkRole('student'), getMyApplications);
-router.put('/applications/:applicationId/status', auth, checkRole('company'), updateApplicationStatus);
+// Apply to a job (uploading 'resume' file is optional but handled)
+router.post('/:jobId/apply', verifyToken, upload.single('resume'), applyToJob);
+
+// Get all applications for the logged-in student
+router.get('/my-applications', verifyToken, getStudentApplications);
+
+// Get all applications for a specific job (Company view)
+router.get('/job/:jobId', verifyToken, getJobApplications);
+
+// Update application status
+router.patch('/:id/status', verifyToken, updateApplicationStatus);
 
 export default router;
-

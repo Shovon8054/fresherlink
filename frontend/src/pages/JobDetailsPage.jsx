@@ -11,7 +11,7 @@ function JobDetailsPage() {
   const [newComment, setNewComment] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
 
@@ -81,7 +81,7 @@ function JobDetailsPage() {
     }
 
     try {
-      await applyToJob({ jobId: id });
+      await applyToJob(id, {});
       alert('Application submitted successfully!');
     } catch (error) {
       alert(error.response?.data?.message || 'Error applying');
@@ -202,9 +202,9 @@ function JobDetailsPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {comment.userProfile?.photo && (
-                      <img 
-                        src={`http://localhost:8080/${comment.userProfile.photo && comment.userProfile.photo.startsWith('uploads/') ? comment.userProfile.photo : `uploads/profile_pictures/${comment.userProfile.photo}`}`} 
-                        alt="User" 
+                      <img
+                        src={`http://localhost:8080/${comment.userProfile.photo && comment.userProfile.photo.startsWith('uploads/') ? comment.userProfile.photo : `uploads/profile_pictures/${comment.userProfile.photo}`}`}
+                        alt="User"
                         style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
                       />
                     )}
@@ -216,12 +216,12 @@ function JobDetailsPage() {
                     </div>
                   </div>
                   {token && role === 'student' && comment.userId?._id?.toString() === localStorage.getItem('userId') && (
-                    <button 
+                    <button
                       onClick={() => handleDeleteComment(comment._id)}
-                      style={{ 
-                        backgroundColor: 'transparent', 
-                        border: 'none', 
-                        color: '#dc3545', 
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: '#dc3545',
                         cursor: 'pointer',
                         fontSize: '12px'
                       }}

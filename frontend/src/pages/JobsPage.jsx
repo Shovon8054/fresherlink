@@ -12,7 +12,7 @@ function JobsPage() {
   const [favorites, setFavorites] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
 
@@ -38,7 +38,7 @@ function JobsPage() {
       if (type) params.type = type;
       const searchTerm = overrideSearch !== undefined ? overrideSearch : search;
       if (searchTerm) params.search = searchTerm;
-      
+
       const response = await getAllJobs(params);
       setJobs(response.data.jobs || response.data);
     } catch (error) {
@@ -79,7 +79,7 @@ function JobsPage() {
     }
 
     try {
-      await applyToJob({ jobId });
+      await applyToJob(jobId, {});
       alert('Application submitted successfully!');
     } catch (error) {
       alert(error.response?.data?.message || 'Error applying');
@@ -153,7 +153,7 @@ function JobsPage() {
             <p>{selectedJob.description}</p>
             <h3>Requirements:</h3>
             <p>{selectedJob.requirements}</p>
-            
+
             <div style={{ marginTop: '20px' }}>
               {token && role === 'student' && (
                 <>
