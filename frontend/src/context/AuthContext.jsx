@@ -6,6 +6,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [role, setRole] = useState(null);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // initialize from localStorage
@@ -23,6 +24,7 @@ export function AuthProvider({ children }) {
         setUser(storedUser);
       }
     }
+    setLoading(false);
   }, []);
 
   const login = (newToken, newRole, data = null) => {
@@ -57,6 +59,7 @@ export function AuthProvider({ children }) {
     token,
     role,
     user,
+    loading,
     login,
     logout,
     isAuthenticated: !!token,

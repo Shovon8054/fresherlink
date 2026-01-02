@@ -43,6 +43,8 @@ export default function PostNewJob({ handleCreateJob, handleUpdateJob, editingJo
         <select value={type} onChange={(e) => setType(e.target.value)} style={{ width: '100%', padding: 8, marginBottom: 8 }}>
           <option value="internship">Internship</option>
           <option value="full-time">Full Time</option>
+          <option value="part-time">Part Time</option>
+          <option value="remote">Remote</option>
         </select>
         <textarea placeholder="Job Description" value={description} onChange={(e) => setDescription(e.target.value)} required style={{ width: '100%', padding: 8, marginBottom: 8, minHeight: 120 }} />
         <textarea placeholder="Requirements" value={requirements} onChange={(e) => setRequirements(e.target.value)} style={{ width: '100%', padding: 8, marginBottom: 8, minHeight: 80 }} />

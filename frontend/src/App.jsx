@@ -14,8 +14,12 @@ import PeoplePage from './pages/PeoplePage';
 import { useAuth } from './context/AuthContext';
 
 function AppContent() {
-  const { token, role } = useAuth();
+  const { token, role, loading } = useAuth();
   const location = useLocation();
+
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+  }
 
   // Logic: Hide navbar on home and authentication pages (/, /login, /signup)
   const isAuthPage = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/signup";

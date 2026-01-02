@@ -72,6 +72,8 @@ export const login = async (req, res) => {
 // NEW: Delete Account
 // ===========================================
 import { Profile } from '../models/Profile.js';
+import { Post } from '../models/Post.js';
+import { Job } from '../models/Job.js';
 
 export const deleteAccount = async (req, res) => {
   try {
@@ -80,7 +82,13 @@ export const deleteAccount = async (req, res) => {
     // 1. Delete associated Profile
     await Profile.findOneAndDelete({ userId });
 
-    // 2. Delete User account
+    // 2. Delete associated Posts
+    await Post.deleteMany({ author: userId });
+
+    // 3. Delete associated Jobs
+    await Job.deleteMany({ companyId: userId });
+
+    // 4. Delete User account
     const deletedUser = await User.findByIdAndDelete(userId);
 
     if (!deletedUser) {

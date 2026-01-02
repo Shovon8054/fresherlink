@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob, getJobApplicants, updateApplicationStatus } from '../../services/api';
 import CompanySidebar from '../../components/CompanySidebar';
 import CompanyProfile from './Company Profile';
@@ -8,7 +9,13 @@ import ManageApplications from './Manage Applications';
 // import Navbar from '../components/Navbar';
 
 function CompanyDashboard() {
-  const [view, setView] = useState('profile'); // profile, create, manage, applications
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get('view') || 'profile';
+
+  const setView = (newView) => {
+    setSearchParams({ view: newView });
+  };
+
   const [profile, setProfile] = useState(null);
 
   const [jobs, setJobs] = useState([]);
@@ -184,7 +191,7 @@ function CompanyDashboard() {
 
       <div style={{ flex: 1, padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-          
+
         </div>
 
         {/* Render views using specialized sub-components */}
