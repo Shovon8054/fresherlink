@@ -54,7 +54,11 @@ const FeedPage = () => {
                     ) : (
                         <div>
                             {posts.map(post => (
-                                <PostCard key={post._id} post={post} />
+                                <PostCard
+                                    key={post._id}
+                                    post={post}
+                                    onPostDeleted={(id) => setPosts(posts.filter(p => p._id !== id))}
+                                />
                             ))}
                         </div>
                     )}

@@ -32,7 +32,7 @@ export const getJobById = (id) => API.get(`/jobs/${id}`);
 export const createJob = (data) => API.post('/jobs', data);
 export const updateJob = (id, data) => API.put(`/jobs/${id}`, data);
 export const deleteJob = (id) => API.delete(`/jobs/${id}`);
-export const getCompanyJobs = () => API.get('/company/jobs');
+export const getCompanyJobs = () => API.get('/jobs/my-jobs');
 
 // ========== FAVORITES ==========
 export const addFavorite = (jobId) => API.post(`/favorites/${jobId}`);
@@ -69,5 +69,7 @@ export const followUser = (id) => API.put(`/users/${id}/follow`);
 export const unfollowUser = (id) => API.put(`/users/${id}/unfollow`);
 export const likePost = (id) => API.put(`/posts/${id}/like`);
 export const addPostComment = (id, text) => API.post(`/posts/${id}/comment`, { text });
+export const updatePost = (id, data) => API.put(`/posts/${id}`, data);
+export const deletePost = (id) => API.delete(`/posts/${id}`);
 
 export default API;

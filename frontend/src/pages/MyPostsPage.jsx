@@ -40,7 +40,11 @@ const MyPostsPage = () => {
                 ) : (
                     <div style={{ maxWidth: '600px' }}>
                         {posts.map(post => (
-                            <PostCard key={post._id} post={post} />
+                            <PostCard
+                                key={post._id}
+                                post={post}
+                                onPostDeleted={(id) => setPosts(posts.filter(p => p._id !== id))}
+                            />
                         ))}
                     </div>
                 )}

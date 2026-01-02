@@ -120,8 +120,50 @@ export const commentOnPost = async (req, res) => {
         await post.save();
 
         // We might want to return the populated post or just the comments
-        const updatedPost = await Post.findById(id).populate('comments.userId', 'name');
+        const updatedPost = await Post.findById(id)
+            .populate('author', 'name email role')
+            .populate('comments.userId', 'name');
         res.json(updatedPost);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const updatePost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { caption } = req.body;
+
+        const post = await Post.findById(id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        // Verify ownership
+        if (post.author.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        if (caption !== undefined) post.caption = caption;
+
+        await post.save();
+        res.json(post);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const deletePost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const post = await Post.findById(id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        // Verify ownership
+        if (post.author.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        await Post.findByIdAndDelete(id);
+        res.json({ message: 'Post deleted successfully', id });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

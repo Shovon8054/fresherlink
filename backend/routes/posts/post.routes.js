@@ -6,7 +6,9 @@ import {
     getMyPosts,
     getFeed,
     likePost,
-    commentOnPost
+    commentOnPost,
+    updatePost,
+    deletePost
 } from '../../controllers/post.controller.js';
 
 const router = express.Router();
@@ -18,5 +20,7 @@ router.get('/my-posts', getMyPosts);
 router.get('/feed', getFeed);
 router.put('/:id/like', likePost);
 router.post('/:id/comment', commentOnPost);
+router.put('/:id', updatePost);
+router.delete('/:id', deletePost);
 
 export default router;

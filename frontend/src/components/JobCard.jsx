@@ -1,7 +1,7 @@
 import React from 'react';
 import { isDeadlineNear } from '../hooks/useJobUtils';
 
-function JobCard({ job, onView, onApply, onToggleFavorite, isFavorite, removeMode = false }) {
+function JobCard({ job, onView, onApply, onToggleFavorite, isFavorite, removeMode = false, isApplied = false }) {
 
   return (
     <div key={job._id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px', position: 'relative' }}>
@@ -45,8 +45,16 @@ function JobCard({ job, onView, onApply, onToggleFavorite, isFavorite, removeMod
         )}
 
         {onApply && (
-          <button onClick={() => onApply(job._id)}>
-            Apply
+          <button
+            onClick={() => !isApplied && onApply(job._id)}
+            style={{
+              backgroundColor: isApplied ? '#6c757d' : '',
+              cursor: isApplied ? 'default' : 'pointer',
+              color: isApplied ? 'white' : ''
+            }}
+            disabled={isApplied}
+          >
+            {isApplied ? 'Applied' : 'Apply'}
           </button>
         )}
       </div>

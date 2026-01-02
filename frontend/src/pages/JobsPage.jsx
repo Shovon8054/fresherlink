@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite } from '../services/api';
+import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite, getMyApplications } from '../services/api';
 import JobCard from '../components/JobCard';
 //import Navbar from '../components/Navbar';
 
@@ -10,11 +10,29 @@ function JobsPage() {
   const [type, setType] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState({});
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set());
   const navigate = useNavigate();
   const location = useLocation();
 
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
+
+  useEffect(() => {
+    if (token && role === 'student') {
+      fetchAppliedJobs();
+    }
+  }, [token, role]);
+
+  const fetchAppliedJobs = async () => {
+    try {
+      const { data } = await getMyApplications();
+      // Assuming data is an array of application objects, each with a jobId
+      const ids = new Set(data.map(app => app.jobId._id || app.jobId));
+      setAppliedJobIds(ids);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    }
+  };
 
   useEffect(() => {
     fetchJobs();
@@ -81,6 +99,7 @@ function JobsPage() {
     try {
       await applyToJob(jobId, {});
       alert('Application submitted successfully!');
+      setAppliedJobIds(prev => new Set(prev).add(jobId));
     } catch (error) {
       alert(error.response?.data?.message || 'Error applying');
     }
@@ -120,6 +139,7 @@ function JobsPage() {
             onToggleFavorite={toggleFavorite}
             onApply={handleApply}
             isFavorite={!!favorites[job._id]}
+            isApplied={appliedJobIds.has(job._id)}
           />
         ))}
       </div>
@@ -157,8 +177,12 @@ function JobsPage() {
             <div style={{ marginTop: '20px' }}>
               {token && role === 'student' && (
                 <>
-                  <button onClick={() => handleApply(selectedJob._id)} style={{ marginRight: '10px' }}>
-                    Apply Now
+                  <button
+                    onClick={() => !appliedJobIds.has(selectedJob._id) && handleApply(selectedJob._id)}
+                    style={{ marginRight: '10px', backgroundColor: appliedJobIds.has(selectedJob._id) ? '#6c757d' : '', cursor: appliedJobIds.has(selectedJob._id) ? 'default' : 'pointer' }}
+                    disabled={appliedJobIds.has(selectedJob._id)}
+                  >
+                    {appliedJobIds.has(selectedJob._id) ? 'Applied' : 'Apply Now'}
                   </button>
                   <button onClick={() => toggleFavorite(selectedJob._id)}>
                     {favorites[selectedJob._id] ? 'Remove from Favorites' : 'Add to Favorites'}

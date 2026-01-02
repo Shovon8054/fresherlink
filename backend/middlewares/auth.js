@@ -5,7 +5,7 @@ const JWT_SECRET = 'HasinaPalaise2024';
 export const auth = (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ message: 'No token, authorization denied' });
     }
@@ -21,7 +21,9 @@ export const auth = (req, res, next) => {
 // Check specific role
 export const checkRole = (...roles) => {
   return (req, res, next) => {
+    console.log("checkRole Checking:", req.user?.role, "against", roles);
     if (!roles.includes(req.user.role)) {
+      console.log("Access denied for role:", req.user?.role);
       return res.status(403).json({ message: 'Access denied' });
     }
     next();
