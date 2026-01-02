@@ -16,8 +16,12 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['application_received', 'application_status_update'],
+        enum: ['application_received', 'application_status_update', 'application_status'],
         required: true
+    },
+    relatedApplication: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Application'
     },
     relatedJob: {
         type: mongoose.Schema.Types.ObjectId,

@@ -41,8 +41,8 @@ export const getFavorites = () => API.get('/favorites');
 export const checkFavorite = (jobId) => API.get(`/favorites/check/${jobId}`);
 
 // ========== APPLICATIONS ==========
-export const applyToJob = (data) => API.post('/apply', data);
-export const getMyApplications = () => API.get('/applications');
+export const applyToJob = (jobId, data) => API.post(`/applications/${jobId}/apply`, data);
+export const getMyApplications = () => API.get('/applications/my-applications');
 export const updateApplicationStatus = (applicationId, status) => API.put(`/applications/${applicationId}/status`, { status });
 export const getJobApplicants = (jobId) => API.get(`/jobs/${jobId}/applicants`);
 
