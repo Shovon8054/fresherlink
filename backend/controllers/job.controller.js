@@ -5,7 +5,7 @@ import { Profile } from '../models/Profile.js';
 export const listJobs = async (req, res) => {
   try {
     const { type, location, search, page = 1, limit = 10 } = req.query;
-    
+
     const filter = { isActive: true };
     if (type) filter.type = type;
     if (location) filter.location = new RegExp(location, 'i');
@@ -65,7 +65,7 @@ export const createJob = async (req, res) => {
 export const updateJob = async (req, res) => {
   try {
     const job = await Job.findOne({ _id: req.params.id, companyId: req.user.id });
-    
+
     if (!job) {
       return res.status(404).json({ message: 'Job not found or unauthorized' });
     }
@@ -84,11 +84,11 @@ export const updateJob = async (req, res) => {
 
 export const deleteJob = async (req, res) => {
   try {
-    const job = await Job.findOneAndDelete({ 
-      _id: req.params.id, 
-      companyId: req.user.id 
+    const job = await Job.findOneAndDelete({
+      _id: req.params.id,
+      companyId: req.user.id
     });
-    
+
     if (!job) {
       return res.status(404).json({ message: 'Job not found or unauthorized' });
     }
@@ -99,12 +99,15 @@ export const deleteJob = async (req, res) => {
   }
 };
 
-export const listCompanyJobs = async (req, res) => {
+export const getCompanyJobs = async (req, res) => {
+  console.log("getCompanyJobs called by user:", req.user?.id);
   try {
     const jobs = await Job.find({ companyId: req.user.id })
       .sort({ createdAt: -1 });
+    console.log("Found jobs:", jobs.length);
     res.json(jobs);
   } catch (error) {
+    console.error("getCompanyJobs Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -149,7 +152,7 @@ export const getRecommendedJobs = async (req, res) => {
   try {
     // Get student's profile with skills
     const profile = await Profile.findOne({ userId: req.user.id });
-    
+
     if (!profile || !profile.skills || profile.skills.length === 0) {
       // If no skills, return recent active jobs
       const jobs = await Job.find({ isActive: true })
@@ -161,9 +164,9 @@ export const getRecommendedJobs = async (req, res) => {
 
     // Extract skills and create search terms
     const skills = profile.skills.map(skill => skill.toLowerCase());
-    
+
     // Find jobs where requirements or description contain any of the student's skills
-    const jobs = await Job.find({ 
+    const jobs = await Job.find({
       isActive: true,
       $or: [
         { requirements: { $regex: skills.join('|'), $options: 'i' } },
