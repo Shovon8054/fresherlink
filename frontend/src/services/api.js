@@ -69,5 +69,7 @@ export const followUser = (id) => API.put(`/users/${id}/follow`);
 export const unfollowUser = (id) => API.put(`/users/${id}/unfollow`);
 export const likePost = (id) => API.put(`/posts/${id}/like`);
 export const addPostComment = (id, text) => API.post(`/posts/${id}/comment`, { text });
+export const updatePost = (id, data) => API.put(`/posts/${id}`, data);
+export const deletePost = (id) => API.delete(`/posts/${id}`);
 
 export default API;

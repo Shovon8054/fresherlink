@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { likePost, addPostComment } from '../services/api';
+import { likePost, addPostComment, deletePost, updatePost } from '../services/api';
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, onPostDeleted }) => {
     const { user } = useAuth();
     const currUserId = user?.id || user?._id || user?.userId || user;
+    const isOwner = post.author?._id === currUserId || post.author === currUserId; // Check ownership
 
     const [isLiked, setIsLiked] = useState(post.likes.includes(currUserId));
     const [likeCount, setLikeCount] = useState(post.likes.length);
@@ -12,6 +13,14 @@ const PostCard = ({ post }) => {
     const [showComments, setShowComments] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [commentLoading, setCommentLoading] = useState(false);
+
+    // Menu State
+    const [showMenu, setShowMenu] = useState(false);
+
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editCaption, setEditCaption] = useState(post.caption || "");
+    const [displayCaption, setDisplayCaption] = useState(post.caption || "");
 
     const handleLike = async () => {
         // Optimistic Update
@@ -38,12 +47,6 @@ const PostCard = ({ post }) => {
         try {
             setCommentLoading(true);
             const { data } = await addPostComment(post._id, newComment);
-            // The endpoint returns the updated post or list of comments?
-            // Let's assume it returns the updated Post object, or at least we should append our new comment manually if we want optimistic.
-            // But backend usually returns the updated post.
-            // Let's verify what `addPostComment` returns. Controller returns `updatedPost`.
-
-            // Update comments list
             setComments(data.comments);
             setNewComment("");
         } catch (error) {
@@ -54,35 +57,126 @@ const PostCard = ({ post }) => {
         }
     };
 
+    const handleDelete = async () => {
+        if (!window.confirm("Delete this post?")) return;
+        try {
+            await deletePost(post._id);
+            if (onPostDeleted) onPostDeleted(post._id);
+        } catch (error) {
+            console.error("Failed to delete post", error);
+            alert("Failed to delete post");
+        }
+    };
+
+    const handleUpdate = async () => {
+        try {
+            await updatePost(post._id, { caption: editCaption });
+            setDisplayCaption(editCaption);
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Failed to update post", error);
+            alert("Failed to update post");
+        }
+    };
+
     return (
         <div style={{
             backgroundColor: 'white', border: '1px solid #e5e7eb',
             borderRadius: '8px', padding: '16px', marginBottom: '16px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            position: 'relative' // For absolute menu positioning
         }}>
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                <div style={{
-                    width: '40px', height: '40px', borderRadius: '50%',
-                    backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontWeight: 'bold', color: '#6b7280',
-                    marginRight: '12px'
-                }}>
-                    {post.author?.name ? post.author.name.charAt(0).toUpperCase() : '?'}
-                </div>
-                <div>
-                    <div style={{ fontWeight: 'bold', color: '#111827' }}>{post.author?.name || 'Unknown User'}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                        {new Date(post.createdAt).toLocaleDateString()}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', fontWeight: 'bold', color: '#6b7280',
+                        marginRight: '12px'
+                    }}>
+                        {post.author?.name ? post.author.name.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 'bold', color: '#111827' }}>{post.author?.name || 'Unknown User'}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                            {new Date(post.createdAt).toLocaleDateString()}
+                        </div>
                     </div>
                 </div>
+
+                {/* 3-Dot Menu for Owner */}
+                {isOwner && (
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={() => setShowMenu(!showMenu)}
+                            style={{
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                fontSize: '1.2rem', padding: '4px 8px', borderRadius: '4px',
+                                color: '#6b7280'
+                            }}
+                            title="Options"
+                        >
+                            ⋮
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {showMenu && (
+                            <div style={{
+                                position: 'absolute', right: 0, top: '100%',
+                                backgroundColor: 'white', border: '1px solid #e5e7eb',
+                                borderRadius: '6px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                zIndex: 10, minWidth: '120px', overflow: 'hidden'
+                            }}>
+                                <button
+                                    onClick={() => { setIsEditing(true); setShowMenu(false); }}
+                                    style={{
+                                        display: 'block', width: '100%', textAlign: 'left',
+                                        padding: '8px 12px', background: 'none', border: 'none',
+                                        cursor: 'pointer', fontSize: '0.9rem', color: '#374151'
+                                    }}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => { handleDelete(); setShowMenu(false); }}
+                                    style={{
+                                        display: 'block', width: '100%', textAlign: 'left',
+                                        padding: '8px 12px', background: 'none', border: 'none',
+                                        cursor: 'pointer', fontSize: '0.9rem', color: '#ef4444'
+                                    }}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {/* Caption */}
-            {post.caption && (
-                <p style={{ margin: '0 0 12px 0', color: '#374151', lineHeight: '1.5' }}>
-                    {post.caption}
-                </p>
+            {/* Caption (View vs Edit Mode) */}
+            {isEditing ? (
+                <div style={{ marginBottom: '12px' }}>
+                    <textarea
+                        value={editCaption}
+                        onChange={(e) => setEditCaption(e.target.value)}
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '60px' }}
+                    />
+                    <div style={{ marginTop: '4px', display: 'flex', gap: '8px' }}>
+                        <button onClick={handleUpdate} style={{ padding: '4px 8px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
+                        <button onClick={() => setIsEditing(false)} style={{ padding: '4px 8px', backgroundColor: '#e5e7eb', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                displayCaption && (
+                    <p style={{ margin: '0 0 12px 0', color: '#374151', lineHeight: '1.5' }}>
+                        {displayCaption}
+                    </p>
+                )
             )}
 
             {/* Media */}
