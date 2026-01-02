@@ -114,7 +114,9 @@ export const getCompanyJobs = async (req, res) => {
 
 export const getJobApplicants = async (req, res) => {
   try {
-    const { jobId } = req.params;
+    const jobId = req.params.id; // Correct parameter name from route /:id/applicants
+
+    console.log("getJobApplicants called for jobId:", jobId);
 
     // Verify the job belongs to the company
     const job = await Job.findById(jobId);
@@ -131,9 +133,12 @@ export const getJobApplicants = async (req, res) => {
       .populate('studentId', 'email')
       .sort({ createdAt: -1 });
 
+    console.log(`Found ${applications.length} applications for job ${jobId}`);
+
     // Populate profile information for each application
     const applicationsWithProfiles = await Promise.all(
       applications.map(async (app) => {
+        // Find profile for the student
         const profile = await Profile.findOne({ userId: app.studentId._id });
         return {
           ...app.toObject(),
@@ -144,6 +149,7 @@ export const getJobApplicants = async (req, res) => {
 
     res.json(applicationsWithProfiles);
   } catch (error) {
+    console.error("getJobApplicants Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
