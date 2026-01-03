@@ -1,5 +1,6 @@
 import React from 'react';
 import { isDeadlineNear } from '../hooks/useJobUtils';
+import VerificationBadge from './VerificationBadge';
 
 function JobCard({ job, onView, onApply, onToggleFavorite, isFavorite, removeMode = false, isApplied = false }) {
 
@@ -21,7 +22,10 @@ function JobCard({ job, onView, onApply, onToggleFavorite, isFavorite, removeMod
         </span>
       )}
 
-      <h3 style={{ marginTop: 0 }}>{job.title}</h3>
+      <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center' }}>
+        {job.title}
+        {job.companyId?.isVerified && <VerificationBadge size={20} />}
+      </h3>
       <p><strong>Type:</strong> {job.type}</p>
       <p><strong>Location:</strong> {job.location || 'Not specified'}</p>
       <p><strong>Salary:</strong> {job.salary || 'Not specified'}</p>

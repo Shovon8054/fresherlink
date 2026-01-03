@@ -46,8 +46,10 @@ apiRouter.use('/notifications', notificationRoutes);
 // Social Feed
 import postRoutes from "./routes/posts/post.routes.js";
 import userRoutes from "./routes/users/user.routes.js";
+import adminRoutes from "./routes/admin/admin.routes.js";
 apiRouter.use('/posts', postRoutes);
 apiRouter.use('/users', userRoutes);
+apiRouter.use('/admin', adminRoutes);
 
 app.use('/api', apiRouter);
 

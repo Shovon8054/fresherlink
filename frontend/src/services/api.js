@@ -71,5 +71,18 @@ export const likePost = (id) => API.put(`/posts/${id}/like`);
 export const addPostComment = (id, text) => API.post(`/posts/${id}/comment`, { text });
 export const updatePost = (id, data) => API.put(`/posts/${id}`, data);
 export const deletePost = (id) => API.delete(`/posts/${id}`);
+export const getAdminStats = () => API.get('/admin/stats');
+export const getAdminUsers = (params) => API.get('/admin/users', { params });
+export const getAdminPosts = () => API.get('/admin/posts');
+export const updateAdminUserStatus = (id, data) => API.patch(`/admin/users/${id}/status`, data);
+export const deleteAdminUser = (id) => API.delete(`/admin/users/${id}`);
+export const adminDeletePost = (id) => API.delete(`/admin/posts/${id}`);
+export const adminDeleteComment = (postId, commentId) => API.delete(`/admin/posts/${postId}/comments/${commentId}`);
+
+export const getAdminJobs = () => API.get('/admin/jobs');
+export const deleteAdminJob = (id) => API.delete(`/admin/jobs/${id}`);
+export const toggleAdminJobFeatured = (id) => API.patch(`/admin/jobs/${id}/featured`);
+export const cleanupAdminExpiredJobs = () => API.post('/admin/jobs/cleanup');
+export const sendAdminAnnouncement = (message) => API.post('/admin/announce', { message });
 
 export default API;
