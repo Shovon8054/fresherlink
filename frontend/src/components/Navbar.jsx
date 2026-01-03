@@ -3,8 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './Navbar.module.css'; // Import the new CSS module
 import logo from '../assets/logo.png';
-import { getNotifications, markNotificationAsRead } from '../services/api';
+import { getNotifications, markNotificationAsRead, sendAdminAnnouncement } from '../services/api';
 import PostModal from './PostModal';
+import AnnouncementModal from './AnnouncementModal';
 
 function Navbar({ onLogout }) {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ function Navbar({ onLogout }) {
   const auth = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isAnnModalOpen, setIsAnnModalOpen] = useState(false);
 
   // Notification State
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -47,6 +49,10 @@ function Navbar({ onLogout }) {
     }
   };
 
+  const handleAnnounce = () => {
+    setIsAnnModalOpen(true);
+  };
+
   const handleLogout = () => {
     auth.logout();
     if (typeof onLogout === 'function') onLogout();
@@ -63,6 +69,7 @@ function Navbar({ onLogout }) {
     if (auth.token) {
       if (auth.role === 'student') navigate('/student/profile');
       else if (auth.role === 'company') navigate('/company');
+      else if (auth.role === 'admin') navigate('/admin');
       else navigate('/');
     } else {
       navigate('/login');
@@ -80,38 +87,55 @@ function Navbar({ onLogout }) {
       <img src={logo} alt="FresherLink logo" className={styles.logoImage} onClick={handleLogoClick} />
 
       <div className={styles.buttonGroup}>
-        {/* Jobs button visible to all users */}
-        <button onClick={() => navigate('/jobs')} className={`${styles.navButton} ${styles.jobsBtn}`}>
-          Jobs
-        </button>
+        {/* Jobs button visible to all users except admins */}
+        {auth.role !== 'admin' && (
+          <button onClick={() => navigate('/jobs')} className={`${styles.navButton} ${styles.jobsBtn}`}>
+            Jobs
+          </button>
+        )}
+
+        {auth.role === 'admin' && (
+          <button
+            onClick={handleAnnounce}
+            className={styles.navButton}
+            style={{ backgroundColor: '#111827', color: 'white', borderRadius: '8px', padding: '8px 15px' }}
+            title="Send Global Announcement"
+          >
+            📢 Announce
+          </button>
+        )}
 
         {auth.token ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
 
-            <button
-              onClick={() => setIsPostModalOpen(true)}
-              className={styles.navButton}
-              title="Create Post"
-              style={{ fontSize: '1.2rem', padding: '8px 12px', background: 'transparent', border: 'none', cursor: 'pointer' }}
-            >
-              ➕
-            </button>
-            <PostModal
-              isOpen={isPostModalOpen}
-              onClose={() => setIsPostModalOpen(false)}
-              onSuccess={() => {
-                navigate('/my-posts');
-              }}
-            />
+            {auth.role !== 'admin' && (
+              <>
+                <button
+                  onClick={() => setIsPostModalOpen(true)}
+                  className={styles.navButton}
+                  title="Create Post"
+                  style={{ fontSize: '1.2rem', padding: '8px 12px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                >
+                  ➕
+                </button>
+                <PostModal
+                  isOpen={isPostModalOpen}
+                  onClose={() => setIsPostModalOpen(false)}
+                  onSuccess={() => {
+                    navigate('/my-posts');
+                  }}
+                />
 
-            {/* PEOPLE LINK */}
-            <button
-              onClick={() => navigate('/people')}
-              style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', padding: '8px', marginRight: '4px' }}
-              title="People"
-            >
-              👥
-            </button>
+                {/* PEOPLE LINK */}
+                <button
+                  onClick={() => navigate('/people')}
+                  style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', padding: '8px', marginRight: '4px' }}
+                  title="People"
+                >
+                  👥
+                </button>
+              </>
+            )}
 
             {/* NOTIFICATION BELL */}
             <div style={{ position: 'relative' }}>
@@ -263,6 +287,10 @@ function Navbar({ onLogout }) {
           </button>
         )}
       </div>
+      <AnnouncementModal
+        isOpen={isAnnModalOpen}
+        onClose={() => setIsAnnModalOpen(false)}
+      />
     </nav>
   );
 }

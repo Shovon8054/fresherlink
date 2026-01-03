@@ -20,7 +20,15 @@ const userSchema = new mongoose.Schema({
   resetPasswordOTP: String,
   resetPasswordExpires: Date,
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 }, { timestamps: true });
 
 // Hash password before saving

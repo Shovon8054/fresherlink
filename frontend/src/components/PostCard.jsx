@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { likePost, addPostComment, deletePost, updatePost } from '../services/api';
 
 const PostCard = ({ post, onPostDeleted }) => {
-    const { user } = useAuth();
+    const { user, role } = useAuth();
     const currUserId = user?.id || user?._id || user?.userId || user;
     const isOwner = post.author?._id === currUserId || post.author === currUserId; // Check ownership
 
@@ -16,12 +16,6 @@ const PostCard = ({ post, onPostDeleted }) => {
 
     // Menu State
     const [showMenu, setShowMenu] = useState(false);
-
-    // Edit State
-    const [isEditing, setIsEditing] = useState(false);
-    const [editCaption, setEditCaption] = useState(post.caption || "");
-    const [displayCaption, setDisplayCaption] = useState(post.caption || "");
-
     const handleLike = async () => {
         // Optimistic Update
         const previousIsLiked = isLiked;
@@ -60,22 +54,15 @@ const PostCard = ({ post, onPostDeleted }) => {
     const handleDelete = async () => {
         if (!window.confirm("Delete this post?")) return;
         try {
-            await deletePost(post._id);
+            if (role === 'admin') {
+                await (await import('../services/api')).adminDeletePost(post._id);
+            } else {
+                await deletePost(post._id);
+            }
             if (onPostDeleted) onPostDeleted(post._id);
         } catch (error) {
             console.error("Failed to delete post", error);
             alert("Failed to delete post");
-        }
-    };
-
-    const handleUpdate = async () => {
-        try {
-            await updatePost(post._id, { caption: editCaption });
-            setDisplayCaption(editCaption);
-            setIsEditing(false);
-        } catch (error) {
-            console.error("Failed to update post", error);
-            alert("Failed to update post");
         }
     };
 
@@ -105,8 +92,8 @@ const PostCard = ({ post, onPostDeleted }) => {
                     </div>
                 </div>
 
-                {/* 3-Dot Menu for Owner */}
-                {isOwner && (
+                {/* 3-Dot Menu for Owner or Admin */}
+                {(isOwner || role === 'admin') && (
                     <div style={{ position: 'relative' }}>
                         <button
                             onClick={() => setShowMenu(!showMenu)}
@@ -129,18 +116,6 @@ const PostCard = ({ post, onPostDeleted }) => {
                                 zIndex: 10, minWidth: '120px', overflow: 'hidden'
                             }}>
                                 <button
-                                    onClick={() => { setIsEditing(true); setShowMenu(false); }}
-                                    style={{
-                                        display: 'block', width: '100%', textAlign: 'left',
-                                        padding: '8px 12px', background: 'none', border: 'none',
-                                        cursor: 'pointer', fontSize: '0.9rem', color: '#374151'
-                                    }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                >
-                                    Edit
-                                </button>
-                                <button
                                     onClick={() => { handleDelete(); setShowMenu(false); }}
                                     style={{
                                         display: 'block', width: '100%', textAlign: 'left',
@@ -158,25 +133,11 @@ const PostCard = ({ post, onPostDeleted }) => {
                 )}
             </div>
 
-            {/* Caption (View vs Edit Mode) */}
-            {isEditing ? (
-                <div style={{ marginBottom: '12px' }}>
-                    <textarea
-                        value={editCaption}
-                        onChange={(e) => setEditCaption(e.target.value)}
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '60px' }}
-                    />
-                    <div style={{ marginTop: '4px', display: 'flex', gap: '8px' }}>
-                        <button onClick={handleUpdate} style={{ padding: '4px 8px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
-                        <button onClick={() => setIsEditing(false)} style={{ padding: '4px 8px', backgroundColor: '#e5e7eb', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
-                    </div>
-                </div>
-            ) : (
-                displayCaption && (
-                    <p style={{ margin: '0 0 12px 0', color: '#374151', lineHeight: '1.5' }}>
-                        {displayCaption}
-                    </p>
-                )
+            {/* Caption */}
+            {post.caption && (
+                <p style={{ margin: '0 0 12px 0', color: '#374151', lineHeight: '1.5' }}>
+                    {post.caption}
+                </p>
             )}
 
             {/* Media */}
@@ -205,9 +166,10 @@ const PostCard = ({ post, onPostDeleted }) => {
             }}>
                 {/* Like Button */}
                 <button
-                    onClick={handleLike}
+                    onClick={role === 'admin' ? null : handleLike}
                     style={{
-                        background: 'none', border: 'none', cursor: 'pointer',
+                        background: 'none', border: 'none',
+                        cursor: role === 'admin' ? 'default' : 'pointer',
                         display: 'flex', alignItems: 'center', gap: '6px',
                         color: isLiked ? '#ef4444' : '#6b7280',
                         fontWeight: isLiked ? '600' : '400',
@@ -241,41 +203,60 @@ const PostCard = ({ post, onPostDeleted }) => {
                             <div style={{ color: '#9ca3af', fontSize: '0.9rem', fontStyle: 'italic' }}>No comments yet.</div>
                         ) : (
                             comments.map((comment, index) => (
-                                <div key={index} style={{ marginBottom: '12px' }}>
+                                <div key={index} style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
                                         <span style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1f2937' }}>
                                             {comment.userId?.name || 'User'}:
                                         </span>
                                         <span style={{ fontSize: '0.9rem', color: '#4b5563' }}>{comment.text}</span>
                                     </div>
+                                    {role === 'admin' && (
+                                        <button
+                                            onClick={async () => {
+                                                if (!window.confirm('Delete this comment?')) return;
+                                                try {
+                                                    const { adminDeleteComment } = await import('../services/api');
+                                                    const { data } = await adminDeleteComment(post._id, comment._id);
+                                                    setComments(data.post.comments);
+                                                } catch (err) {
+                                                    alert('Failed to delete comment');
+                                                }
+                                            }}
+                                            style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer', padding: '2px 5px' }}
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
                                 </div>
                             ))
                         )}
                     </div>
 
-                    {/* Comment Form */}
-                    <form onSubmit={handleCommentSubmit} style={{ display: 'flex', gap: '10px' }}>
-                        <input
-                            type="text"
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Write a comment..."
-                            style={{
-                                flex: 1, padding: '8px 12px', borderRadius: '20px',
-                                border: '1px solid #d1d5db', outline: 'none', fontSize: '0.9rem'
-                            }}
-                        />
-                        <button
-                            type="submit"
-                            disabled={!newComment.trim() || commentLoading}
-                            style={{
-                                background: 'none', border: 'none', cursor: 'pointer',
-                                color: newComment.trim() ? '#2563eb' : '#9ca3af', fontWeight: '600'
-                            }}
-                        >
-                            Post
-                        </button>
-                    </form>
+                    {/* Comment Form (Hidden for Admin) */}
+                    {role !== 'admin' && (
+                        <form onSubmit={handleCommentSubmit} style={{ display: 'flex', gap: '10px' }}>
+                            <input
+                                type="text"
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Write a comment..."
+                                style={{
+                                    flex: 1, padding: '8px 12px', borderRadius: '20px',
+                                    border: '1px solid #d1d5db', outline: 'none', fontSize: '0.9rem'
+                                }}
+                            />
+                            <button
+                                type="submit"
+                                disabled={!newComment.trim() || commentLoading}
+                                style={{
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    color: newComment.trim() ? '#2563eb' : '#9ca3af', fontWeight: '600'
+                                }}
+                            >
+                                Post
+                            </button>
+                        </form>
+                    )}
                 </div>
             )}
         </div>

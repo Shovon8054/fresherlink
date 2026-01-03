@@ -4,10 +4,10 @@ import { loginUser, signupStudent, signupCompany } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import styles from './LoginPage.module.css';
 
-function LoginPage() {
-  const [isLogin, setIsLogin] = useState(true);
+function LoginPage({ initialIsLogin = true }) {
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [role, setRole] = useState('student');
-  const [email, setEmail] = useState('');``
+  const [email, setEmail] = useState(''); ``
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -27,17 +27,21 @@ function LoginPage() {
       const { token, role: userRole, userId } = response.data;
       auth.login(token, userRole, { userId });
       if (!isLogin) alert('Account created successfully!');
-      navigate(userRole === 'student' ? '/student' : '/company');
+      if (userRole === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate(userRole === 'student' ? '/student' : '/company');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong');
     }
   };
 
   return (
-    
+
     <div className={styles.pageWrapper}>
       <title>Log in page</title>
-    
+
       {/* LEFT SIDE: Form */}
       <div className={styles.leftSide}>
         <div className={styles.card}>
@@ -57,29 +61,29 @@ function LoginPage() {
                 </label>
               </div>
             )}
-            
+
             <div className={styles.inputGroup}>
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-                className={styles.inputField} 
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className={styles.inputField}
               />
             </div>
 
             <div className={styles.inputGroup}>
-              <input 
-                type="password" 
-                placeholder="Password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
-                className={styles.inputField} 
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className={styles.inputField}
               />
             </div>
-            
+
             {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
             <button type="submit" className={styles.submitBtn}>
@@ -90,7 +94,7 @@ function LoginPage() {
           <p className={styles.toggleText}>
             {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
             <button onClick={() => setIsLogin(!isLogin)} className={styles.linkBtn}>
-               {isLogin ? "Create one" : "Login"}
+              {isLogin ? "Create one" : "Login"}
             </button>
           </p>
 

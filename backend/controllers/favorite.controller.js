@@ -20,9 +20,9 @@ export const addFavorite = async (req, res) => {
     });
     await favorite.save();
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Job added to favorites',
-      favorite 
+      favorite
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

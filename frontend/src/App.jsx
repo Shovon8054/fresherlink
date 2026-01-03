@@ -11,6 +11,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import MyPostsPage from './pages/MyPostsPage';
 import FeedPage from './pages/FeedPage';
 import PeoplePage from './pages/PeoplePage';
+import AdminDashboard from './pages/AdminDashboard';
 import { useAuth } from './context/AuthContext';
 
 function AppContent() {
@@ -32,7 +33,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<LoginPage />} />
+          <Route path="/signup" element={<LoginPage initialIsLogin={false} />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/:id" element={<JobDetailsPage />} />
 
@@ -44,6 +45,10 @@ function AppContent() {
           <Route
             path="/company"
             element={token && role === 'company' ? <CompanyDashboard /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/admin"
+            element={token && role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />}
           />
           <Route
             path="/privacy"

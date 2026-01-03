@@ -17,8 +17,8 @@ export const listJobs = async (req, res) => {
     }
 
     const jobs = await Job.find(filter)
-      .populate('companyId', 'email')
-      .sort({ createdAt: -1 })
+      .populate('companyId', 'email isVerified')
+      .sort({ isFeatured: -1, createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
