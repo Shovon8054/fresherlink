@@ -16,7 +16,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['application_received', 'application_status_update', 'application_status', 'announcement'],
+        enum: ['application_received', 'application_status_update', 'application_status', 'announcement', 'follow', 'post_like', 'post_comment'],
         required: true
     },
     relatedApplication: {
@@ -26,6 +26,10 @@ const notificationSchema = new mongoose.Schema({
     relatedJob: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Job'
+    },
+    relatedPost: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
     },
     isRead: {
         type: Boolean,
