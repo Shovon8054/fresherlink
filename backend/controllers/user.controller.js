@@ -47,6 +47,23 @@ export const followUser = async (req, res) => {
             await targetUser.save();
         }
 
+        // Create notification for target user
+        try {
+            const { Notification } = await import('../models/Notification.js');
+            const { Profile } = await import('../models/profile.js');
+            const followerProfile = await Profile.findOne({ userId: myId });
+            const followerName = followerProfile ? (followerProfile.name || followerProfile.companyName) : 'Someone';
+
+            await Notification.create({
+                recipient: targetUser._id,
+                sender: myId,
+                message: `${followerName} started following you`,
+                type: 'follow'
+            });
+        } catch (err) {
+            console.error('Failed to create follow notification', err.message);
+        }
+
         res.json({ message: "Followed successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });

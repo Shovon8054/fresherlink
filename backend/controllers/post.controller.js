@@ -1,5 +1,26 @@
 import { Post } from '../models/Post.js';
 
+// Helper to attach profile name/companyName to author field
+const attachAuthorName = async (posts) => {
+    const arr = Array.isArray(posts) ? posts : [posts];
+    const { Profile } = await import('../models/profile.js');
+
+    return Promise.all(arr.map(async (p) => {
+        const postObj = p.toObject ? p.toObject() : p;
+        try {
+            const authorId = postObj.author?._id || postObj.author;
+            const profile = await Profile.findOne({ userId: authorId });
+            if (profile) {
+                postObj.author = postObj.author || {};
+                postObj.author.name = profile.name || profile.companyName || postObj.author.name;
+            }
+        } catch (err) {
+            // ignore
+        }
+        return postObj;
+    }));
+};
+
 export const createPost = async (req, res) => {
     try {
         const { caption } = req.body;
@@ -25,7 +46,9 @@ export const createPost = async (req, res) => {
         });
 
         await newPost.save();
-        res.status(201).json(newPost);
+        const populated = await Post.findById(newPost._id).populate('author', 'email role');
+        const [withName] = await attachAuthorName(populated);
+        res.status(201).json(withName);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -35,9 +58,11 @@ export const getMyPosts = async (req, res) => {
     try {
         const posts = await Post.find({ author: req.user.id })
             .sort({ createdAt: -1 })
-            .populate('author', 'name email') // basic info
+            .populate('author', 'email role')
             .populate('comments.userId', 'name');
-        res.json(posts);
+
+        const postsWithNames = await attachAuthorName(posts);
+        res.json(postsWithNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -69,10 +94,11 @@ export const getFeed = async (req, res) => {
             author: { $in: [...followingIds, req.user.id] }
         })
             .sort({ createdAt: -1 })
-            .populate('author', 'name email role') // Show who posted
+            .populate('author', 'email role')
             .populate('comments.userId', 'name');
 
-        res.json(posts);
+        const postsWithNames = await attachAuthorName(posts);
+        res.json(postsWithNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -85,15 +111,38 @@ export const likePost = async (req, res) => {
         if (!post) return res.status(404).json({ message: 'Post not found' });
 
         const userId = req.user.id;
-        const index = post.likes.indexOf(userId);
+        const index = post.likes.findIndex(l => l.toString() === userId);
 
+        let didLike = false;
         if (index === -1) {
             post.likes.push(userId);
+            didLike = true;
         } else {
             post.likes.splice(index, 1);
         }
 
         await post.save();
+
+        // Create notification if someone liked someone else's post
+        if (didLike && post.author.toString() !== userId) {
+            try {
+                const { Notification } = await import('../models/Notification.js');
+                const { Profile } = await import('../models/profile.js');
+                const likerProfile = await Profile.findOne({ userId });
+                const likerName = likerProfile ? (likerProfile.name || likerProfile.companyName) : 'Someone';
+
+                await Notification.create({
+                    recipient: post.author,
+                    sender: userId,
+                    message: `${likerName} liked your post`,
+                    type: 'post_like',
+                    relatedPost: post._id
+                });
+            } catch (err) {
+                console.error('Failed to create like notification', err.message);
+            }
+        }
+
         res.json(post);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -119,11 +168,33 @@ export const commentOnPost = async (req, res) => {
         post.comments.push(newComment);
         await post.save();
 
-        // We might want to return the populated post or just the comments
+        // Create notification for post author (if commenter is not author)
+        try {
+            if (post.author.toString() !== req.user.id) {
+                const { Notification } = await import('../models/Notification.js');
+                const { Profile } = await import('../models/profile.js');
+                const commenterProfile = await Profile.findOne({ userId: req.user.id });
+                const commenterName = commenterProfile ? (commenterProfile.name || commenterProfile.companyName) : 'Someone';
+
+                await Notification.create({
+                    recipient: post.author,
+                    sender: req.user.id,
+                    message: `${commenterName} commented on your post`,
+                    type: 'post_comment',
+                    relatedPost: post._id
+                });
+            }
+        } catch (err) {
+            console.error('Failed to create comment notification', err.message);
+        }
+
+        // Return populated post with author name from Profile
         const updatedPost = await Post.findById(id)
-            .populate('author', 'name email role')
+            .populate('author', 'email role')
             .populate('comments.userId', 'name');
-        res.json(updatedPost);
+
+        const [withName] = await attachAuthorName(updatedPost);
+        res.json(withName);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
