@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite, getMyApplications } from '../services/api';
+import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite, getMyApplications, getFavorites } from '../services/api';
 import JobCard from '../components/JobCard';
 //import Navbar from '../components/Navbar';
 
@@ -20,6 +20,7 @@ function JobsPage() {
   useEffect(() => {
     if (token && role === 'student') {
       fetchAppliedJobs();
+      fetchFavorites();
     }
   }, [token, role]);
 
@@ -31,6 +32,19 @@ function JobsPage() {
       setAppliedJobIds(ids);
     } catch (error) {
       console.error('Error fetching applications:', error);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const { data } = await getFavorites();
+      const favMap = {};
+      data.forEach(fav => {
+        favMap[fav.jobId._id || fav.jobId] = true;
+      });
+      setFavorites(favMap);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
     }
   };
 

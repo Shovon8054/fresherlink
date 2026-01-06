@@ -159,7 +159,7 @@ export const getRecommendedJobs = async (req, res) => {
     // Get student's profile with skills
     const profile = await Profile.findOne({ userId: req.user.id });
 
-    if (!profile || !profile.skills || profile.skills.length === 0) {
+    if (!profile || ((!profile.technicalSkills || profile.technicalSkills.length === 0) && (!profile.softSkills || profile.softSkills.length === 0))) {
       // If no skills, return recent active jobs
       const jobs = await Job.find({ isActive: true })
         .populate('companyId', 'email')
@@ -169,7 +169,10 @@ export const getRecommendedJobs = async (req, res) => {
     }
 
     // Extract skills and create search terms
-    const skills = profile.skills.map(skill => skill.toLowerCase());
+    const skills = [
+      ...(profile.technicalSkills || []).map(skill => skill.toLowerCase()),
+      ...(profile.softSkills || []).map(skill => skill.toLowerCase())
+    ];
 
     // Find jobs where requirements or description contain any of the student's skills
     const jobs = await Job.find({

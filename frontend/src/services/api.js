@@ -52,7 +52,7 @@ export const addComment = (jobId, text) => API.post(`/jobs/${jobId}/comments`, {
 export const deleteComment = (commentId) => API.delete(`/comments/${commentId}`);
 
 // ========== RECOMMENDATIONS ==========
-export const getRecommendedJobs = () => API.get('/jobs/recommended');
+export const getRecommendedJobs = () => API.get('/jobs/recommendations');
 
 // ========== NOTIFICATIONS ==========
 export const getNotifications = () => API.get('/notifications');
