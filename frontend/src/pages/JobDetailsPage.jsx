@@ -18,6 +18,9 @@ function JobDetailsPage() {
   useEffect(() => {
     fetchJobDetails();
     fetchComments();
+    if (token && role === 'student') {
+      checkFavoriteStatus();
+    }
   }, [id]);
 
   const fetchJobDetails = async () => {
@@ -30,6 +33,15 @@ function JobDetailsPage() {
       navigate('/jobs');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkFavoriteStatus = async () => {
+    try {
+      const response = await checkFavorite(id);
+      setIsFavorite(response.data.isFavorite);
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
     }
   };
 
@@ -165,8 +177,8 @@ function JobDetailsPage() {
             <button onClick={handleApply} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
               Apply Now
             </button>
-            <button onClick={toggleFavorite} style={{ padding: '10px 20px', backgroundColor: isFavorite ? '#dc3545' : '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-              {isFavorite ? '★ Remove from Favorites' : '☆ Add to Favorites'}
+            <button onClick={toggleFavorite} style={{ padding: '10px 20px', backgroundColor: isFavorite ? '#6c757d' : '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+              <span style={{ color: isFavorite ? '#ffd700' : '#fff' }}>{isFavorite ? '★' : '☆'}</span> {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
             </button>
           </div>
         )}

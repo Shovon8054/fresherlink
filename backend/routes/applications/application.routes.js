@@ -20,6 +20,6 @@ router.get('/my-applications', verifyToken, getStudentApplications);
 router.get('/job/:jobId', verifyToken, getJobApplications);
 
 // Update application status
-router.patch('/:id/status', verifyToken, updateApplicationStatus);
+router.put('/:id/status', verifyToken, updateApplicationStatus);
 
 export default router;

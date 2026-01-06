@@ -37,7 +37,17 @@ function JobCard({ job, onView, onApply, onToggleFavorite, isFavorite, removeMod
         </button>
 
         {onToggleFavorite && !removeMode && (
-          <button onClick={() => onToggleFavorite(job._id)} style={{ marginRight: '5px' }}>
+          <button 
+            onClick={() => onToggleFavorite(job._id)} 
+            style={{ 
+              marginRight: '5px',
+              backgroundColor: 'transparent',
+              color: isFavorite ? '#ffd700' : '#666',
+              border: 'none',
+              fontSize: '18px',
+              cursor: 'pointer'
+            }}
+          >
             {isFavorite ? '★' : '☆'}
           </button>
         )}

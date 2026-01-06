@@ -4,14 +4,8 @@ import { addComment, getJobComments, deleteComment } from '../../controllers/com
 
 const router = express.Router();
 
-// Get comments for a job (public, but auth recommended for better UX)
-router.get('/jobs/:jobId/comments', getJobComments);
-
-// Add comment (student only)
-router.post('/jobs/:jobId/comments', auth, checkRole('student'), addComment);
-
 // Delete comment (student only, own comments)
-router.delete('/comments/:commentId', auth, checkRole('student'), deleteComment);
+router.delete('/:commentId', auth, checkRole('student'), deleteComment);
 
 export default router;
 

@@ -10,6 +10,7 @@ import {
   getJobApplicants,
   getRecommendedJobs
 } from '../../controllers/job.controller.js';
+import { addComment, getJobComments } from '../../controllers/comment.controller.js';
 
 const router = express.Router();
 
@@ -23,6 +24,10 @@ router.get('/recommendations', auth, checkRole('student'), getRecommendedJobs); 
 // Company protected routes - Define BEFORE generic /:id
 router.post('/', auth, checkRole('company'), createJob); // POST /jobs
 router.get('/my-jobs', auth, checkRole('company'), getCompanyJobs); // GET /jobs/my-jobs
+
+// Comment routes
+router.get('/:jobId/comments', getJobComments); // GET /jobs/:jobId/comments
+router.post('/:jobId/comments', auth, checkRole('student'), addComment); // POST /jobs/:jobId/comments
 
 // Generic ID routes - Must come LAST
 router.get('/:id', getJobById); // GET /jobs/:id
