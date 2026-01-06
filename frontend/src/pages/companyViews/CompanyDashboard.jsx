@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 import { useEffect, useState } from 'react';
+=======
+import { useState, useEffect } from 'react';
+import { useCard } from '../../App';
+>>>>>>> cd1c622874d55a08cf620353f3c9825e77e7a3c5
 import { useSearchParams } from 'react-router-dom';
 import CompanySidebar from '../../components/CompanySidebar';
 import { createJob, deleteJob, getCompanyJobs, getJobApplicants, getProfile, updateApplicationStatus, updateJob, updateProfile } from '../../services/api';
@@ -9,6 +14,7 @@ import PostNewJob from './Post New Job';
 // import Navbar from '../components/Navbar';
 
 function CompanyDashboard() {
+  const showCard = useCard();
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get('view') || 'profile';
 
@@ -58,7 +64,7 @@ function CompanyDashboard() {
       setApplicants(response.data);
     } catch (error) {
       console.error('Error fetching applicants:', error);
-      alert('Error fetching applicants');
+      showCard('Error fetching applicants', 'error');
     }
   }
 
@@ -96,7 +102,7 @@ function CompanyDashboard() {
   const handleStatusUpdate = async (applicationId, status) => {
     try {
       const response = await updateApplicationStatus(applicationId, status);
-      alert(`Application ${status} successfully!`);
+      showCard(`Application ${status} successfully!`, 'info');
       // Optimistically update local applicants list so UI immediately reflects status change
       setApplicants((prev) => prev.map((app) => app._id === applicationId ? { ...app, status } : app));
       // Ensure server state is in sync by refetching applicants for the selected job
@@ -105,7 +111,7 @@ function CompanyDashboard() {
       }
       return response.data.application;
     } catch (error) {
-      alert(error.response?.data?.message || 'Error updating application status');
+      showCard(error.response?.data?.message || 'Error updating application status', 'error');
       throw error;
     }
   };
@@ -124,11 +130,11 @@ function CompanyDashboard() {
 
       const response = await updateProfile(formData);
       setProfile(response.data.profile || response.data);
-      alert('Profile updated successfully!');
+      showCard('Profile updated successfully!', 'info');
       // Refresh profile from server
       fetchProfile();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error updating profile');
+      showCard(error.response?.data?.message || 'Error updating profile', 'error');
     }
   };
 
@@ -136,26 +142,26 @@ function CompanyDashboard() {
   const handleCreateJob = async (jobData) => {
     try {
       await createJob(jobData);
-      alert('Job posted successfully!');
+      showCard('Job posted successfully!', 'info');
       resetJobForm();
       fetchJobs();
       setView('manage');
     } catch (error) {
-      alert(error.response?.data?.message || 'Error creating job');
+      showCard(error.response?.data?.message || 'Error creating job', 'error');
     }
   };
 
   const handleUpdateJob = async (jobData) => {
-    if (!editingJob) return alert('No job selected for update');
+    if (!editingJob) return showCard('No job selected for update', 'error');
     try {
       await updateJob(editingJob._id, jobData);
-      alert('Job updated successfully!');
+      showCard('Job updated successfully!', 'info');
       setEditingJob(null);
       resetJobForm();
       fetchJobs();
       setView('manage');
     } catch (error) {
-      alert(error.response?.data?.message || 'Error updating job');
+      showCard(error.response?.data?.message || 'Error updating job', 'error');
     }
   };
 
@@ -163,10 +169,10 @@ function CompanyDashboard() {
     if (window.confirm('Are you sure you want to delete this job?')) {
       try {
         await deleteJob(jobId);
-        alert('Job deleted successfully!');
+        showCard('Job deleted successfully!', 'info');
         fetchJobs();
       } catch {
-        alert('Error deleting job');
+        showCard('Error deleting job', 'error');
       }
     }
   };

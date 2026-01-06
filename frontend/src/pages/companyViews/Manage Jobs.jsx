@@ -1,18 +1,55 @@
+<<<<<<< HEAD
 import { deleteJob } from "../../services/api";
 
 export default function ManageJobs({ startEditJob, jobs, onJobDeleted }) {
   // Jobs are passed from parent, no need to fetch
+=======
+import { useEffect, useState } from "react";
+import { useCard } from '../../App';
+import { deleteJob, getCompanyJobs } from "../../services/api";
+
+export default function ManageJobs({ startEditJob }) {
+  const showCard = useCard();
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const { data } = await getCompanyJobs();
+      setJobs(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setError(
+        err.response?.data?.message || err.message || "Failed to load jobs."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+>>>>>>> cd1c622874d55a08cf620353f3c9825e77e7a3c5
 
   const handleDelete = async (jobId) => {
     if (!window.confirm("Are you sure you want to delete this job?")) return;
 
     try {
       await deleteJob(jobId);
+<<<<<<< HEAD
       onJobDeleted(jobId); // Notify parent to update jobs list
       alert("Job deleted successfully");
+=======
+      setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
+      showCard("Job deleted successfully", 'info');
+>>>>>>> cd1c622874d55a08cf620353f3c9825e77e7a3c5
     } catch (err) {
       console.error("Error deleting job:", err);
-      alert("Failed to delete job");
+      showCard("Failed to delete job", 'error');
     }
   };
 

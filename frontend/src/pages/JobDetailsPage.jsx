@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useCard } from '../App';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJobById, addFavorite, removeFavorite, applyToJob, getJobComments, addComment, deleteComment } from '../services/api';
 import { isDeadlineNear } from '../hooks/useJobUtils';
 
 function JobDetailsPage() {
+  const showCard = useCard();
   const { id } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
@@ -29,7 +31,7 @@ function JobDetailsPage() {
       setJob(response.data);
     } catch (error) {
       console.error('Error fetching job:', error);
-      alert('Job not found');
+      showCard('Job not found', 'error');
       navigate('/jobs');
     } finally {
       setLoading(false);
@@ -57,12 +59,12 @@ function JobDetailsPage() {
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!token || role !== 'student') {
-      alert('Please login as student to comment');
+      showCard('Please login as student to comment', 'error');
       return;
     }
 
     if (!newComment.trim()) {
-      alert('Please enter a comment');
+      showCard('Please enter a comment', 'error');
       return;
     }
 
@@ -71,7 +73,7 @@ function JobDetailsPage() {
       setComments([response.data.comment, ...comments]);
       setNewComment('');
     } catch (error) {
-      alert(error.response?.data?.message || 'Error adding comment');
+      showCard(error.response?.data?.message || 'Error adding comment', 'error');
     }
   };
 
@@ -81,28 +83,28 @@ function JobDetailsPage() {
         await deleteComment(commentId);
         setComments(comments.filter(c => c._id !== commentId));
       } catch (error) {
-        alert(error.response?.data?.message || 'Error deleting comment');
+        showCard(error.response?.data?.message || 'Error deleting comment', 'error');
       }
     }
   };
 
   const handleApply = async () => {
     if (!token || role !== 'student') {
-      alert('Please login as student to apply');
+      showCard('Please login as student to apply', 'error');
       return;
     }
 
     try {
       await applyToJob(id, {});
-      alert('Application submitted successfully!');
+      showCard('Application submitted successfully!', 'info');
     } catch (error) {
-      alert(error.response?.data?.message || 'Error applying');
+      showCard(error.response?.data?.message || 'Error applying', 'error');
     }
   };
 
   const toggleFavorite = async () => {
     if (!token || role !== 'student') {
-      alert('Please login as student to save favorites');
+      showCard('Please login as student to save favorites', 'error');
       return;
     }
 
@@ -115,7 +117,7 @@ function JobDetailsPage() {
         setIsFavorite(true);
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Error');
+      showCard(error.response?.data?.message || 'Error', 'error');
     }
   };
 
