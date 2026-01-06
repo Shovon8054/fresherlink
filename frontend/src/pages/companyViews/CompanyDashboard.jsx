@@ -204,7 +204,7 @@ function CompanyDashboard() {
         )}
 
         {view === 'manage' && (
-          <ManageJobs jobs={jobs} fetchJobs={fetchJobs} startEditJob={startEditJob} handleDeleteJob={handleDeleteJob} />
+          <ManageJobs startEditJob={startEditJob} />
         )}
 
         {view === 'applications' && (
