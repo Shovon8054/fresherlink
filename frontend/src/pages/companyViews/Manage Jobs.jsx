@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+import { deleteJob } from "../../services/api";
+
+export default function ManageJobs({ startEditJob, jobs, onJobDeleted }) {
+  // Jobs are passed from parent, no need to fetch
+=======
 import { useEffect, useState } from "react";
 import { useCard } from '../../App';
 import { deleteJob, getCompanyJobs } from "../../services/api";
@@ -27,22 +33,25 @@ export default function ManageJobs({ startEditJob }) {
       setLoading(false);
     }
   };
+>>>>>>> cd1c622874d55a08cf620353f3c9825e77e7a3c5
 
   const handleDelete = async (jobId) => {
     if (!window.confirm("Are you sure you want to delete this job?")) return;
 
     try {
       await deleteJob(jobId);
+<<<<<<< HEAD
+      onJobDeleted(jobId); // Notify parent to update jobs list
+      alert("Job deleted successfully");
+=======
       setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
       showCard("Job deleted successfully", 'info');
+>>>>>>> cd1c622874d55a08cf620353f3c9825e77e7a3c5
     } catch (err) {
       console.error("Error deleting job:", err);
       showCard("Failed to delete job", 'error');
     }
   };
-
-  if (loading) return <div>Loading jobs...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
 
   return (
     <div>

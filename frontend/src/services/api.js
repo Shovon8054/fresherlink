@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:8080/api'
+  baseURL: '/api'
 });
 
 // Add token to every request
@@ -12,6 +12,19 @@ API.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Handle 401 responses (token expired)
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid, logout user
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // ========== AUTH ==========
 export const loginUser = (data) => API.post('/login', data);

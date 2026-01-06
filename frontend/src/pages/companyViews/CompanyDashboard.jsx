@@ -1,12 +1,16 @@
+<<<<<<< HEAD
+import { useEffect, useState } from 'react';
+=======
 import { useState, useEffect } from 'react';
 import { useCard } from '../../App';
+>>>>>>> cd1c622874d55a08cf620353f3c9825e77e7a3c5
 import { useSearchParams } from 'react-router-dom';
-import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob, getJobApplicants, updateApplicationStatus } from '../../services/api';
 import CompanySidebar from '../../components/CompanySidebar';
+import { createJob, deleteJob, getCompanyJobs, getJobApplicants, getProfile, updateApplicationStatus, updateJob, updateProfile } from '../../services/api';
 import CompanyProfile from './Company Profile';
-import PostNewJob from './Post New Job';
-import ManageJobs from './Manage Jobs';
 import ManageApplications from './Manage Applications';
+import ManageJobs from './Manage Jobs';
+import PostNewJob from './Post New Job';
 // import Navbar from '../components/Navbar';
 
 function CompanyDashboard() {
@@ -24,6 +28,8 @@ function CompanyDashboard() {
   const [editingJob, setEditingJob] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [selectedJobId, setSelectedJobId] = useState(null);
+  const [jobsLoading, setJobsLoading] = useState(false);
+  const [jobsError, setJobsError] = useState(false);
   // Form state is managed inside child components
 
   async function fetchProfile() {
@@ -36,6 +42,8 @@ function CompanyDashboard() {
   }
 
   async function fetchJobs() {
+    setJobsLoading(true);
+    setJobsError(false);
     try {
       const response = await getCompanyJobs();
       setJobs(response.data);
@@ -44,6 +52,9 @@ function CompanyDashboard() {
       }
     } catch (error) {
       console.error('Error fetching jobs:', error);
+      setJobsError(true);
+    } finally {
+      setJobsLoading(false);
     }
   }
 
@@ -71,19 +82,9 @@ function CompanyDashboard() {
 
   useEffect(() => {
     if (view === 'manage' || view === 'applications') {
-      (async () => {
-        try {
-          const response = await getCompanyJobs();
-          setJobs(response.data);
-          if (view === 'applications' && response.data.length > 0 && !selectedJobId) {
-            setSelectedJobId(response.data[0]._id);
-          }
-        } catch {
-          console.error('Error fetching jobs');
-        }
-      })();
+      fetchJobs();
     }
-  }, [view, selectedJobId]);
+  }, [view]);
 
   useEffect(() => {
     if (view === 'applications' && selectedJobId) {
@@ -181,8 +182,13 @@ function CompanyDashboard() {
     setView('create');
   };
 
+  const handleJobDeleted = (jobId) => {
+    setJobs(prev => prev.filter(job => job._id !== jobId));
+  };
+
   const resetJobForm = () => {
     setEditingJob(null);
+    setView('create');
   };
 
 
@@ -206,11 +212,27 @@ function CompanyDashboard() {
         )}
 
         {view === 'manage' && (
-          <ManageJobs startEditJob={startEditJob} />
+          jobsLoading ? (
+            <div>Loading jobs...</div>
+          ) : jobsError ? (
+            <div>
+              <p>Error loading jobs. <button onClick={fetchJobs}>Retry</button></p>
+            </div>
+          ) : (
+            <ManageJobs startEditJob={startEditJob} jobs={jobs} onJobDeleted={handleJobDeleted} />
+          )
         )}
 
         {view === 'applications' && (
-          <ManageApplications jobs={jobs} selectedJobId={selectedJobId} setSelectedJobId={setSelectedJobId} applicants={applicants} handleStatusUpdate={handleStatusUpdate} />
+          jobsLoading ? (
+            <div>Loading jobs...</div>
+          ) : jobsError ? (
+            <div>
+              <p>Error loading jobs. <button onClick={fetchJobs}>Retry</button></p>
+            </div>
+          ) : (
+            <ManageApplications jobs={jobs} selectedJobId={selectedJobId} setSelectedJobId={setSelectedJobId} applicants={applicants} handleStatusUpdate={handleStatusUpdate} />
+          )
         )}
 
       </div>

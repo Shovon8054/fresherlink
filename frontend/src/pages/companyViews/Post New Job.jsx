@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function PostNewJob({ handleCreateJob, handleUpdateJob, editingJob, resetJobForm }) {
   const [title, setTitle] = useState('');
@@ -31,7 +31,7 @@ export default function PostNewJob({ handleCreateJob, handleUpdateJob, editingJo
     } else {
       await handleCreateJob(jobData);
     }
-    resetJobForm();
+    // resetJobForm();
     setTitle(''); setType('internship'); setDescription(''); setRequirements(''); setLocation(''); setSalary(''); setDeadline('');
   };
 

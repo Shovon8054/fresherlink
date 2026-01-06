@@ -89,7 +89,7 @@ const PeoplePage = () => {
 
                             const isFollowing = p.userId.followers.includes(currUserId);
                             const roleDisplay = p.userId.role === 'student' ? 'Student' : 'Company';
-                            const photoUrl = p.profilePicture ? `http://localhost:8080/${p.profilePicture}` : null;
+                            const photoUrl = p.profilePicture ? `http://localhost:5000/uploads/${p.userId.role === 'company' ? 'logos' : 'profile_pictures'}/${p.profilePicture}` : null;
 
                             return (
                                 <div key={p._id} style={{

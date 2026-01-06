@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 export default function ManageApplications({ jobs = [], selectedJobId, setSelectedJobId, applicants = [], handleStatusUpdate }) {
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function ManageApplications({ jobs = [], selectedJobId, setSelect
                 const resumePath = app.studentProfile?.resume ? (app.studentProfile.resume.startsWith('uploads/') ? app.studentProfile.resume : `uploads/resumes/${app.studentProfile.resume}`) : null;
                 return (
                   <div key={app._id} style={{ border: '1px solid #ddd', padding: 12, borderRadius: 6 }}>
-                    {photoPath && <img src={`http://localhost:8080/${photoPath}`} alt="Student" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />}
+                    {photoPath && <img src={`http://localhost:5000/${photoPath}`} alt="Student" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />}
                     <h4>{app.studentProfile?.name || 'Name not provided'}</h4>
                     <p><strong>Email:</strong> {app.studentId?.email}</p>
                     <p><strong>Institution:</strong> {app.studentProfile?.institution || 'Not provided'}</p>
@@ -41,7 +41,7 @@ export default function ManageApplications({ jobs = [], selectedJobId, setSelect
                     <p><strong>Status:</strong> {app.status}</p>
                     {resumePath && (
                       <p style={{ marginTop: 8 }}>
-                        <a href={`http://localhost:8080/${resumePath}`} target="_blank" rel="noopener noreferrer" style={{ color: '#007bff' }}>View Resume</a>
+                        <a href={`http://localhost:5000/${resumePath}`} target="_blank" rel="noopener noreferrer" style={{ color: '#007bff' }}>View Resume</a>
                       </p>
                     )}
                     <div style={{ marginTop: 8 }}>
