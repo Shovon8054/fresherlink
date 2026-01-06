@@ -48,10 +48,12 @@ export const getJobById = async (req, res) => {
 
 export const createJob = async (req, res) => {
   try {
-    const job = new Job({
-      ...req.body,
-      companyId: req.user.id
-    });
+    const jobData = { ...req.body, companyId: req.user.id };
+    // Remove empty deadline
+    if (!jobData.deadline || jobData.deadline === '') {
+      delete jobData.deadline;
+    }
+    const job = new Job(jobData);
     await job.save();
     res.status(201).json({
       message: 'Job posted successfully',
@@ -70,7 +72,12 @@ export const updateJob = async (req, res) => {
       return res.status(404).json({ message: 'Job not found or unauthorized' });
     }
 
-    Object.assign(job, req.body);
+    const updateData = { ...req.body };
+    // Remove empty deadline
+    if (!updateData.deadline || updateData.deadline === '') {
+      delete updateData.deadline;
+    }
+    Object.assign(job, updateData);
     await job.save();
 
     res.json({
