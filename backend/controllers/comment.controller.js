@@ -25,15 +25,21 @@ export const addComment = async (req, res) => {
     await comment.save();
     
     // Populate user info for response
-    await comment.populate('userId', 'email');
+    await comment.populate('userId', 'email role');
     const { Profile } = await import('../models/Profile.js');
     const profile = await Profile.findOne({ userId: comment.userId._id });
+    const name = comment.userId.role === 'company' ? (profile?.companyName || comment.userId.email) : (profile?.name || comment.userId.email);
+    const photo = profile?.photo || null;
     
     res.status(201).json({
       message: 'Comment added successfully',
       comment: {
         ...comment.toObject(),
-        userProfile: profile
+        userId: {
+          ...comment.userId.toObject(),
+          name,
+          photo
+        }
       }
     });
   } catch (error) {
@@ -52,7 +58,7 @@ export const getJobComments = async (req, res) => {
     }
 
     const comments = await Comment.find({ jobId })
-      .populate('userId', 'email')
+      .populate('userId', 'email role')
       .sort({ createdAt: -1 });
 
     // Populate profile information for each comment
@@ -60,9 +66,15 @@ export const getJobComments = async (req, res) => {
     const commentsWithProfiles = await Promise.all(
       comments.map(async (comment) => {
         const profile = await Profile.findOne({ userId: comment.userId._id });
+        const name = comment.userId.role === 'company' ? (profile?.companyName || comment.userId.email) : (profile?.name || comment.userId.email);
+        const photo = profile?.photo || null;
         return {
           ...comment.toObject(),
-          userProfile: profile
+          userId: {
+            ...comment.userId.toObject(),
+            name,
+            photo
+          }
         };
       })
     );

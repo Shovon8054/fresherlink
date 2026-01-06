@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getProfile } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -9,22 +10,38 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // initialize from localStorage
-    const storedToken = localStorage.getItem('token');
-    const storedRole = localStorage.getItem('role');
-    const storedUser = localStorage.getItem('user') || localStorage.getItem('userId');
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem('token');
+      const storedRole = localStorage.getItem('role');
+      const storedUser = localStorage.getItem('user') || localStorage.getItem('userId');
 
-    if (storedToken) setToken(storedToken);
-    if (storedRole) setRole(storedRole);
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        // storedUser might be a primitive id string
-        setUser(storedUser);
+      if (storedToken) {
+        // Validate token by trying to fetch profile
+        try {
+          await getProfile();
+          // If successful, token is valid
+          setToken(storedToken);
+          if (storedRole) setRole(storedRole);
+          if (storedUser) {
+            try {
+              setUser(JSON.parse(storedUser));
+            } catch (e) {
+              setUser(storedUser);
+            }
+          }
+        } catch (error) {
+          // Token is invalid, clear localStorage
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('user');
+          localStorage.removeItem('userId');
+          console.log('Invalid token, cleared auth data');
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = (newToken, newRole, data = null) => {

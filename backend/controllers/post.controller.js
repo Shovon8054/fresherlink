@@ -59,10 +59,32 @@ export const getMyPosts = async (req, res) => {
         const posts = await Post.find({ author: req.user.id })
             .sort({ createdAt: -1 })
             .populate('author', 'email role')
-            .populate('comments.userId', 'name');
+            .populate('comments.userId', 'email role');
 
+        // Attach names and photos to comments
         const postsWithNames = await attachAuthorName(posts);
-        res.json(postsWithNames);
+        const postsWithCommentNames = await Promise.all(postsWithNames.map(async (post) => {
+            const commentsWithNames = await Promise.all(post.comments.map(async (comment) => {
+                const { Profile } = await import('../models/profile.js');
+                const profile = await Profile.findOne({ userId: comment.userId._id });
+                const name = comment.userId.role === 'company' ? (profile?.companyName || comment.userId.email) : (profile?.name || comment.userId.email);
+                const photo = profile?.photo || null;
+                return {
+                    ...comment.toObject(),
+                    userId: {
+                        ...comment.userId.toObject(),
+                        name,
+                        photo
+                    }
+                };
+            }));
+            return {
+                ...post,
+                comments: commentsWithNames
+            };
+        }));
+
+        res.json(postsWithCommentNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -95,10 +117,32 @@ export const getFeed = async (req, res) => {
         })
             .sort({ createdAt: -1 })
             .populate('author', 'email role')
-            .populate('comments.userId', 'name');
+            .populate('comments.userId', 'email role');
 
+        // Attach names and photos to comments
         const postsWithNames = await attachAuthorName(posts);
-        res.json(postsWithNames);
+        const postsWithCommentNames = await Promise.all(postsWithNames.map(async (post) => {
+            const commentsWithNames = await Promise.all(post.comments.map(async (comment) => {
+                const { Profile } = await import('../models/profile.js');
+                const profile = await Profile.findOne({ userId: comment.userId._id });
+                const name = comment.userId.role === 'company' ? (profile?.companyName || comment.userId.email) : (profile?.name || comment.userId.email);
+                const photo = profile?.photo || null;
+                return {
+                    ...comment.toObject(),
+                    userId: {
+                        ...comment.userId.toObject(),
+                        name,
+                        photo
+                    }
+                };
+            }));
+            return {
+                ...post,
+                comments: commentsWithNames
+            };
+        }));
+
+        res.json(postsWithCommentNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -188,13 +232,23 @@ export const commentOnPost = async (req, res) => {
             console.error('Failed to create comment notification', err.message);
         }
 
-        // Return populated post with author name from Profile
-        const updatedPost = await Post.findById(id)
-            .populate('author', 'email role')
-            .populate('comments.userId', 'name');
+        // Return the new comment with populated user
+        const { Profile } = await import('../models/profile.js');
+        const profile = await Profile.findOne({ userId: req.user.id });
+        const name = req.user.role === 'company' ? (profile?.companyName || req.user.email) : (profile?.name || req.user.email);
+        const photo = profile?.photo || null;
+        const commentToReturn = {
+            ...newComment,
+            userId: {
+                _id: req.user.id,
+                email: req.user.email,
+                role: req.user.role,
+                name,
+                photo
+            }
+        };
 
-        const [withName] = await attachAuthorName(updatedPost);
-        res.json(withName);
+        res.json({ comment: commentToReturn });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

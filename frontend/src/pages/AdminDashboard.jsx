@@ -348,7 +348,7 @@ function AdminDashboard() {
                                             <tr key={job._id} style={trStyle}>
                                                 <td style={tdStyle}>
                                                     <div style={{ fontWeight: '600' }}>{job.title}</div>
-                                                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{job.companyId?.email}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{job.companyId?.name || job.companyId?.email}</div>
                                                 </td>
                                                 <td style={tdStyle}>
                                                     {job.deadline ? new Date(job.deadline).toLocaleDateString() : 'No deadline'}
