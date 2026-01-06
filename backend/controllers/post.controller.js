@@ -1,9 +1,9 @@
 import { Post } from '../models/Post.js';
+import { Profile } from '../models/profile.js';
 
 // Helper to attach profile name/companyName to author field
 const attachAuthorName = async (posts) => {
     const arr = Array.isArray(posts) ? posts : [posts];
-    const { Profile } = await import('../models/profile.js');
 
     return Promise.all(arr.map(async (p) => {
         const postObj = p.toObject ? p.toObject() : p;
@@ -61,30 +61,10 @@ export const getMyPosts = async (req, res) => {
             .populate('author', 'email role')
             .populate('comments.userId', 'email role');
 
-        // Attach names and photos to comments
+        // Attach names to authors
         const postsWithNames = await attachAuthorName(posts);
-        const postsWithCommentNames = await Promise.all(postsWithNames.map(async (post) => {
-            const commentsWithNames = await Promise.all(post.comments.map(async (comment) => {
-                const { Profile } = await import('../models/profile.js');
-                const profile = await Profile.findOne({ userId: comment.userId._id });
-                const name = comment.userId.role === 'company' ? (profile?.companyName || comment.userId.email) : (profile?.name || comment.userId.email);
-                const photo = profile?.photo || null;
-                return {
-                    ...comment.toObject(),
-                    userId: {
-                        ...comment.userId.toObject(),
-                        name,
-                        photo
-                    }
-                };
-            }));
-            return {
-                ...post,
-                comments: commentsWithNames
-            };
-        }));
 
-        res.json(postsWithCommentNames);
+        res.json(postsWithNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -92,57 +72,16 @@ export const getMyPosts = async (req, res) => {
 
 export const getFeed = async (req, res) => {
     try {
-        // Get list of user IDs I am following
-        const myUser = req.user; // Usually populate isn't on req.user unless middleware put it there full.
-        // However, our auth middleware just decodes token. We might need to fetch the user's following list first.
-        // Or, simpler: we assume we can fetch User from DB.
-
-        // Changing approach: fetch clean user to get 'following' array.
-        // But wait, our 'User' model was just updated.
-
-        // OPTIMIZATION: If req.user is just { id, role, ... } from JWT, we need to fetch following list.
-        // BUT we can use $in query directly if we fetch user first.
-
-        // Import User to fetch following list
-        const { User } = await import('../models/User.js');
-        const user = await User.findById(req.user.id);
-
-        if (!user) return res.status(404).json({ message: "User not found" });
-
-        const followingIds = user.following || [];
-
-        // Feed = My posts + Following posts
-        const posts = await Post.find({
-            author: { $in: [...followingIds, req.user.id] }
-        })
+        // Feed = All posts
+        const posts = await Post.find({})
             .sort({ createdAt: -1 })
             .populate('author', 'email role')
             .populate('comments.userId', 'email role');
 
-        // Attach names and photos to comments
+        // Attach names to authors
         const postsWithNames = await attachAuthorName(posts);
-        const postsWithCommentNames = await Promise.all(postsWithNames.map(async (post) => {
-            const commentsWithNames = await Promise.all(post.comments.map(async (comment) => {
-                const { Profile } = await import('../models/profile.js');
-                const profile = await Profile.findOne({ userId: comment.userId._id });
-                const name = comment.userId.role === 'company' ? (profile?.companyName || comment.userId.email) : (profile?.name || comment.userId.email);
-                const photo = profile?.photo || null;
-                return {
-                    ...comment.toObject(),
-                    userId: {
-                        ...comment.userId.toObject(),
-                        name,
-                        photo
-                    }
-                };
-            }));
-            return {
-                ...post,
-                comments: commentsWithNames
-            };
-        }));
 
-        res.json(postsWithCommentNames);
+        res.json(postsWithNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

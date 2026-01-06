@@ -13,7 +13,19 @@ export const getAllUsers = async (req, res) => {
         // Filter out profiles where userId might be null (deleted users) if necessary
         const validProfiles = profiles.filter(p => p.userId);
 
-        res.json(validProfiles);
+        // Add unified name and photo fields
+        const profilesWithNames = validProfiles.map(p => {
+            const name = p.userId.role === 'company' ? (p.companyName || p.userId.email) : (p.name || p.userId.email);
+            const photo = p.photo || p.logo || null; // Use photo for students, logo for companies if available
+            const profilePicture = photo ? photo.split('/').pop() : null;
+            return {
+                ...p.toObject(),
+                name,
+                profilePicture
+            };
+        });
+
+        res.json(profilesWithNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

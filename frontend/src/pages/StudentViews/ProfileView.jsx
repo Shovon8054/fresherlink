@@ -143,7 +143,7 @@ export default function ProfileView() {
                         <div style={{ flex: '0 0 120px' }}>
                             {profile.photo ? (
                                 <img
-                                    src={`http://localhost:8080/${(profile.photo && profile.photo.startsWith('uploads/')) ? profile.photo : `uploads/profile_pictures/${profile.photo}`}`}
+                                    src={`http://localhost:5000/${(profile.photo && profile.photo.startsWith('uploads/')) ? profile.photo : `uploads/profile_pictures/${profile.photo}`}`}
                                     className={styles.avatar}
                                     alt="Profile"
                                 />

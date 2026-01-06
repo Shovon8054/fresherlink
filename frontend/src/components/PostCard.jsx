@@ -84,7 +84,7 @@ const PostCard = ({ post, onPostDeleted }) => {
                     }}>
                         {post.author?.photo ? (
                             <img 
-                                src={`http://localhost:8080/${post.author.photo.startsWith('uploads/') ? post.author.photo : `uploads/profile_pictures/${post.author.photo}`}`} 
+                                src={`http://localhost:5000/${post.author.photo.startsWith('uploads/') ? post.author.photo : `uploads/profile_pictures/${post.author.photo}`}`} 
                                 alt="Avatar" 
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                             />
@@ -153,13 +153,13 @@ const PostCard = ({ post, onPostDeleted }) => {
                 <div style={{ marginBottom: '12px' }}>
                     {post.mediaType === 'video' ? (
                         <video
-                            src={`http://localhost:8080/${post.mediaUrl}`}
+                            src={`http://localhost:5000/${post.mediaUrl}`}
                             controls
                             style={{ width: '100%', borderRadius: '8px', maxHeight: '500px' }}
                         />
                     ) : (
                         <img
-                            src={`http://localhost:8080/${post.mediaUrl}`}
+                            src={`http://localhost:5000/${post.mediaUrl}`}
                             alt="Post media"
                             style={{ width: '100%', borderRadius: '8px', maxHeight: '500px', objectFit: 'cover' }}
                         />

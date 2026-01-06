@@ -42,7 +42,7 @@ export default function CompanyProfile({ profile, fetchProfile, handleUpdateProf
       {profile && !isEditing && (
         <div>
           {profile.logo && (
-            <img src={`http://localhost:8080/${profile.logo.startsWith('uploads/') ? profile.logo : `uploads/logos/${profile.logo}`}`} alt="Logo" style={{ width: 150 }} />
+            <img src={`http://localhost:5000/${profile.logo.startsWith('uploads/') ? profile.logo : `uploads/logos/${profile.logo}`}`} alt="Logo" style={{ width: 150 }} />
           )}
           <p><strong>Company Name:</strong> {profile.companyName}</p>
           <p><strong>Description:</strong> {profile.description}</p>

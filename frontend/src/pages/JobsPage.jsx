@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite, getMyApplications, getFavorites } from '../services/api';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import JobCard from '../components/JobCard';
+import { addFavorite, applyToJob, getAllJobs, getFavorites, getMyApplications, removeFavorite } from '../services/api';
 //import Navbar from '../components/Navbar';
 
 function JobsPage() {
@@ -39,8 +39,10 @@ function JobsPage() {
     try {
       const { data } = await getFavorites();
       const favMap = {};
-      data.forEach(fav => {
-        favMap[fav.jobId._id || fav.jobId] = true;
+      data.forEach(job => {
+        if (job && job._id) {
+          favMap[job._id] = true;
+        }
       });
       setFavorites(favMap);
     } catch (error) {

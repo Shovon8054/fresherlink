@@ -53,5 +53,5 @@ apiRouter.use('/admin', adminRoutes);
 
 app.use('/api', apiRouter);
 
-const PORT = 8080;
+const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
