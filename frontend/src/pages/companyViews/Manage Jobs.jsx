@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useCard } from '../../App';
 import { deleteJob, getCompanyJobs } from "../../services/api";
 
 export default function ManageJobs({ startEditJob }) {
+  const showCard = useCard();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,10 +34,10 @@ export default function ManageJobs({ startEditJob }) {
     try {
       await deleteJob(jobId);
       setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
-      alert("Job deleted successfully");
+      showCard("Job deleted successfully", 'info');
     } catch (err) {
       console.error("Error deleting job:", err);
-      alert("Failed to delete job");
+      showCard("Failed to delete job", 'error');
     }
   };
 

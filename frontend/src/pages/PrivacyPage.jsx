@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useCard } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getProfile, deleteAccount, forgotPassword, resetPassword } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function PrivacyPage() {
+    const showCard = useCard();
     const { logout } = useAuth();
     const navigate = useNavigate();
 
@@ -38,23 +40,23 @@ export default function PrivacyPage() {
             await deleteAccount();
             logout();
             navigate('/');
-            alert('Account deleted successfully.');
+            showCard('Account deleted successfully.', 'info');
         } catch (error) {
             console.error(error);
-            alert('Failed to delete account. Please try again.');
+            showCard('Failed to delete account. Please try again.', 'error');
         }
     };
 
     const handleSendOTP = async () => {
         const userEmail = profileData?.userId?.email;
-        if (!userEmail) return alert('Email not found. Cannot send OTP.');
+        if (!userEmail) return showCard('Email not found. Cannot send OTP.', 'error');
         try {
             setResetLoading(true);
             await forgotPassword(userEmail);
             setOtpStep(1);
-            alert('OTP sent to your email!');
+            showCard('OTP sent to your email!', 'info');
         } catch (error) {
-            alert(error.response?.data?.message || 'Error sending OTP');
+            showCard(error.response?.data?.message || 'Error sending OTP', 'error');
         } finally {
             setResetLoading(false);
         }
@@ -66,12 +68,12 @@ export default function PrivacyPage() {
         try {
             setResetLoading(true);
             await resetPassword({ email: userEmail, otp, newPassword });
-            alert('Password reset successfully!');
+            showCard('Password reset successfully!', 'info');
             setOtpStep(0);
             setOtp('');
             setNewPassword('');
         } catch (error) {
-            alert(error.response?.data?.message || 'Error resetting password');
+            showCard(error.response?.data?.message || 'Error resetting password', 'error');
         } finally {
             setResetLoading(false);
         }

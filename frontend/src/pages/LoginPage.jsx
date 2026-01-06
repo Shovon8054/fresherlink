@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useCard } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, signupStudent, signupCompany } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import styles from './LoginPage.module.css';
 
 function LoginPage({ initialIsLogin = true }) {
+  const showCard = useCard();
   const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [role, setRole] = useState('student');
   const [email, setEmail] = useState(''); ``
@@ -26,7 +28,7 @@ function LoginPage({ initialIsLogin = true }) {
       }
       const { token, role: userRole, userId } = response.data;
       auth.login(token, userRole, { userId });
-      if (!isLogin) alert('Account created successfully!');
+      if (!isLogin) showCard('Account created successfully!', 'info');
       if (userRole === 'admin') {
         navigate('/admin');
       } else {

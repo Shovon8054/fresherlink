@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useCard } from '../../App';
 import { getProfile, updateProfile } from '../../services/api';
 import styles from './StudentView.module.css';
 //import dop from '../../assets/none_dp.png'  
 
 export default function ProfileView() {
+    const showCard = useCard();
     // UI States
     const [profile, setProfile] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -125,10 +127,10 @@ export default function ProfileView() {
             const response = await updateProfile(formData);
             setProfile(response.data.profile || response.data);
             setIsEditing(false);
-            alert('Profile updated successfully!');
+            showCard('Profile updated successfully!', 'info');
         } catch (e) {
             console.error('Error updating profile', e);
-            alert(e.response?.data?.message || 'Error updating profile');
+            showCard(e.response?.data?.message || 'Error updating profile', 'error');
         }
     };
 
