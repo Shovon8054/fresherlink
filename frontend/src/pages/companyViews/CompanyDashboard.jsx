@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getProfile, updateProfile, createJob, getCompanyJobs, updateJob, deleteJob, getJobApplicants, updateApplicationStatus } from '../../services/api';
 import CompanySidebar from '../../components/CompanySidebar';
-import CompanyProfile from './Company Profile';
-import PostNewJob from './Post New Job';
-import ManageJobs from './Manage Jobs';
-import ManageApplications from './Manage Applications';
+import CompanyProfile from './CompanyProfile';
+import PostNewJob from './PostNewJob';
+import ManageJobs from './ManageJobs';
+import ManageApplications from './ManageApplications';
 
 function CompanyDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
