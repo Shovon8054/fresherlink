@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useCard } from '../App';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAllJobs, addFavorite, removeFavorite, applyToJob, checkFavorite, getMyApplications, getFavorites } from '../services/api';
 import JobCard from '../components/JobCard';
 //import Navbar from '../components/Navbar';
 
 function JobsPage() {
+  const showCard = useCard();
   const [jobs, setJobs] = useState([]);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
@@ -87,7 +89,7 @@ function JobsPage() {
 
   const toggleFavorite = async (jobId) => {
     if (!token || role !== 'student') {
-      alert('Please login as student to save favorites');
+      showCard('Please login as student to save favorites', 'error');
       return;
     }
 
@@ -100,22 +102,22 @@ function JobsPage() {
         setFavorites({ ...favorites, [jobId]: true });
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Error');
+      showCard(error.response?.data?.message || 'Error', 'error');
     }
   };
 
   const handleApply = async (jobId) => {
     if (!token || role !== 'student') {
-      alert('Please login as student to apply');
+      showCard('Please login as student to apply', 'error');
       return;
     }
 
     try {
       await applyToJob(jobId, {});
-      alert('Application submitted successfully!');
+      showCard('Application submitted successfully!', 'info');
       setAppliedJobIds(prev => new Set(prev).add(jobId));
     } catch (error) {
-      alert(error.response?.data?.message || 'Error applying');
+      showCard(error.response?.data?.message || 'Error applying', 'error');
     }
   };
 

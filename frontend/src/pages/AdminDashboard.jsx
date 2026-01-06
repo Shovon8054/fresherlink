@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useCard } from '../App';
 import {
     getAdminStats,
     getAdminUsers,
@@ -15,6 +16,7 @@ import VerificationBadge from '../components/VerificationBadge';
 import PostCard from '../components/PostCard';
 
 function AdminDashboard() {
+    const showCard = useCard();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stats, setStats] = useState({
         students: 0,
@@ -92,7 +94,7 @@ function AdminDashboard() {
             const response = await updateAdminUserStatus(id, { [field]: !currentValue });
             setUsers(users.map(u => u._id === id ? response.data : u));
         } catch (err) {
-            alert('Failed to update user status');
+            showCard('Failed to update user status', 'error');
         }
     };
 
@@ -102,7 +104,7 @@ function AdminDashboard() {
             await deleteAdminUser(id);
             setUsers(users.filter(u => u._id !== id));
         } catch (err) {
-            alert('Failed to delete user');
+            showCard('Failed to delete user', 'error');
         }
     };
 
@@ -115,7 +117,7 @@ function AdminDashboard() {
             const response = await toggleAdminJobFeatured(id);
             setJobs(jobs.map(j => j._id === id ? response.data : j));
         } catch (err) {
-            alert('Failed to toggle featured status');
+            showCard('Failed to toggle featured status', 'error');
         }
     };
 
@@ -125,7 +127,7 @@ function AdminDashboard() {
             await deleteAdminJob(id);
             setJobs(jobs.filter(j => j._id !== id));
         } catch (err) {
-            alert('Failed to delete job');
+            showCard('Failed to delete job', 'error');
         }
     };
 
@@ -133,10 +135,10 @@ function AdminDashboard() {
         if (!window.confirm('Delete ALL jobs that are past their deadline?')) return;
         try {
             const response = await cleanupAdminExpiredJobs();
-            alert(response.data.message);
+            showCard(response.data.message, 'info');
             fetchJobs();
         } catch (err) {
-            alert('Failed to cleanup expired jobs');
+            showCard('Failed to cleanup expired jobs', 'error');
         }
     };
 

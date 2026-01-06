@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useCard } from '../App';
 import { sendAdminAnnouncement } from '../services/api';
 
 const AnnouncementModal = ({ isOpen, onClose }) => {
@@ -8,9 +9,10 @@ const AnnouncementModal = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
+    const showCard = useCard();
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!message.trim()) return alert("Please enter a message");
+        if (!message.trim()) return showCard("Please enter a message", 'error');
 
         try {
             setLoading(true);
@@ -23,7 +25,7 @@ const AnnouncementModal = ({ isOpen, onClose }) => {
             }, 2000); // Show "Sent" for 2 seconds then close
         } catch (error) {
             console.error("Failed to send announcement", error);
-            alert("Failed to send announcement");
+            showCard("Failed to send announcement", 'error');
         } finally {
             setLoading(false);
         }
