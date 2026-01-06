@@ -4,6 +4,7 @@ import { sendAdminAnnouncement } from '../services/api';
 const AnnouncementModal = ({ isOpen, onClose }) => {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [sent, setSent] = useState(false);
 
     if (!isOpen) return null;
 
@@ -14,9 +15,12 @@ const AnnouncementModal = ({ isOpen, onClose }) => {
         try {
             setLoading(true);
             await sendAdminAnnouncement(message);
-            alert("Announcement sent successfully!");
+            setSent(true);
             setMessage('');
-            onClose();
+            setTimeout(() => {
+                setSent(false);
+                onClose();
+            }, 2000); // Show "Sent" for 2 seconds then close
         } catch (error) {
             console.error("Failed to send announcement", error);
             alert("Failed to send announcement");
@@ -123,16 +127,16 @@ const AnnouncementModal = ({ isOpen, onClose }) => {
                             </button>
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || sent}
                                 style={{
-                                    padding: '10px 24px', background: '#111827', color: 'white',
-                                    border: 'none', borderRadius: '8px', cursor: loading ? 'default' : 'pointer',
+                                    padding: '10px 24px', background: sent ? '#10b981' : '#111827', color: 'white',
+                                    border: 'none', borderRadius: '8px', cursor: (loading || sent) ? 'default' : 'pointer',
                                     fontWeight: '600', fontSize: '0.95rem',
                                     opacity: loading ? 0.7 : 1,
                                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                                 }}
                             >
-                                {loading ? 'Sending...' : 'Broadcast Announcement'}
+                                {sent ? '✓ Sent' : loading ? 'Sending...' : 'Broadcast Announcement'}
                             </button>
                         </div>
                     </form>

@@ -80,9 +80,17 @@ const PostCard = ({ post, onPostDeleted }) => {
                         width: '40px', height: '40px', borderRadius: '50%',
                         backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center',
                         justifyContent: 'center', fontWeight: 'bold', color: '#6b7280',
-                        marginRight: '12px'
+                        marginRight: '12px', overflow: 'hidden'
                     }}>
-                        {post.author?.name ? post.author.name.charAt(0).toUpperCase() : '?'}
+                        {post.author?.photo ? (
+                            <img 
+                                src={`http://localhost:8080/${post.author.photo.startsWith('uploads/') ? post.author.photo : `uploads/profile_pictures/${post.author.photo}`}`} 
+                                alt="Avatar" 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                        ) : (
+                            post.author?.name ? post.author.name.charAt(0).toUpperCase() : '?'
+                        )}
                     </div>
                     <div>
                         <div style={{ fontWeight: 'bold', color: '#111827' }}>{post.author?.name || 'Unknown User'}</div>
@@ -204,7 +212,14 @@ const PostCard = ({ post, onPostDeleted }) => {
                         ) : (
                             comments.map((comment, index) => (
                                 <div key={index} style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: '#6b7280' }}>
+                                            {comment.userId?.photo ? (
+                                                <img src={`http://localhost:5000/uploads/profile_pictures/${comment.userId.photo}`} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                            ) : (
+                                                (comment.userId?.name || 'U').charAt(0).toUpperCase()
+                                            )}
+                                        </div>
                                         <span style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1f2937' }}>
                                             {comment.userId?.name || 'User'}:
                                         </span>

@@ -3,6 +3,7 @@ import { Job } from '../models/Job.js';
 import { Application } from '../models/Application.js';
 import { Post } from '../models/Post.js';
 import { Notification } from '../models/Notification.js';
+import { Profile } from '../models/Profile.js';
 
 export const getDashboardStats = async (req, res) => {
     try {
@@ -101,9 +102,25 @@ export const adminDeleteComment = async (req, res) => {
 
         const updatedPost = await Post.findById(postId)
             .populate('author', 'name email role')
-            .populate('comments.userId', 'name');
+            .populate('comments.userId', 'email role');
 
-        res.json({ message: 'Comment deleted by admin successfully', post: updatedPost });
+        // Attach names to comments
+        const commentsWithNames = await Promise.all(updatedPost.comments.map(async (comment) => {
+            const { Profile } = await import('../models/Profile.js');
+            const profile = await Profile.findOne({ userId: comment.userId._id });
+            const name = comment.userId.role === 'company' ? (profile?.companyName || comment.userId.email) : (profile?.name || comment.userId.email);
+            const photo = profile?.photo || null;
+            return {
+                ...comment.toObject(),
+                userId: {
+                    ...comment.userId.toObject(),
+                    name,
+                    photo
+                }
+            };
+        }));
+
+        res.json({ message: 'Comment deleted by admin successfully', post: { ...updatedPost.toObject(), comments: commentsWithNames } });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -113,9 +130,41 @@ export const getAllPosts = async (req, res) => {
     try {
         const posts = await Post.find()
             .sort({ createdAt: -1 })
-            .populate('author', 'name email role')
-            .populate('comments.userId', 'name');
-        res.json(posts);
+            .populate('author', 'email role')
+            .populate('comments.userId', 'email role');
+
+        // For each post, populate the author's profile to get name
+        const postsWithNames = await Promise.all(posts.map(async (post) => {
+            const profile = await Profile.findOne({ userId: post.author._id });
+            const postObj = post.toObject();
+            // Set name based on role
+            if (post.author.role === 'company') {
+                postObj.author.name = profile?.companyName || post.author.email;
+            } else {
+                postObj.author.name = profile?.name || post.author.email;
+            }
+            postObj.author.photo = profile?.photo;
+            
+            // Also populate comment user names
+            postObj.comments = await Promise.all(postObj.comments.map(async (comment) => {
+                const commentProfile = await Profile.findOne({ userId: comment.userId._id });
+                const commentUser = comment.userId;
+                if (commentUser.role === 'company') {
+                    commentUser.name = commentProfile?.companyName || commentUser.email;
+                } else {
+                    commentUser.name = commentProfile?.name || commentUser.email;
+                }
+                commentUser.photo = commentProfile?.photo;
+                return {
+                    ...comment,
+                    userId: commentUser
+                };
+            }));
+            
+            return postObj;
+        }));
+
+        res.json(postsWithNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -126,7 +175,16 @@ export const adminGetAllJobs = async (req, res) => {
         const jobs = await Job.find()
             .populate('companyId', 'email isVerified')
             .sort({ createdAt: -1 });
-        res.json(jobs);
+
+        // For each job, populate the company's profile to get company name
+        const jobsWithCompanyNames = await Promise.all(jobs.map(async (job) => {
+            const profile = await Profile.findOne({ userId: job.companyId._id });
+            const jobObj = job.toObject();
+            jobObj.companyId.name = profile?.companyName || job.companyId.email;
+            return jobObj;
+        }));
+
+        res.json(jobsWithCompanyNames);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
